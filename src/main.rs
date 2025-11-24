@@ -14,5 +14,10 @@ fn main() {
     let mut auc = BinaryAuroc::new(10000);
     auc.update((&predictions, &targets))
         .expect("lengths should match");
+    println!("Approximated AUC: {:.2}%", auc.compute() * 100.0);
+
+    let mut auc = BinaryAuroc::new(0);
+    auc.update((&predictions, &targets))
+        .expect("lengths should match");
     println!("AUC: {:.2}%", auc.compute() * 100.0);
 }
