@@ -1,10 +1,10 @@
-use rust_metrics::{Accuracy, Metric};
+use rust_metrics::{BinaryAccuracy, Metric};
 
 fn main() {
-    let predictions = [0.0, 1.0, 2.0, 2.0];
-    let targets = [0.0, 2.0, 2.0, 2.0];
+    let predictions = [0, 1, 1, 0];
+    let targets = [0, 1, 0, 0];
 
-    let mut accuracy = Accuracy::new();
+    let mut accuracy = BinaryAccuracy::new();
     accuracy
         .update((&predictions, &targets))
         .expect("lengths should match");

@@ -1,3 +1,3 @@
 pub mod accuracy;
 
-pub use accuracy::Accuracy;
+pub use accuracy::{BinaryAccuracy, MulticlassAccuracy, MultilabelAccuracy};
