@@ -1,5 +1,8 @@
 use rust_metrics::{BinaryAccuracy, BinaryAuroc, Metric};
 
+#[cfg(feature = "text-bert")]
+use rust_metrics::SentenceEmbeddingSimilarity;
+
 fn main() {
     let predictions = [0, 1, 1, 0];
     let targets = [0, 1, 0, 0];
@@ -20,4 +23,13 @@ fn main() {
     auc.update((&predictions, &targets))
         .expect("lengths should match");
     println!("AUC: {:.2}%", auc.compute() * 100.0);
+
+    #[cfg(feature = "text-bert")]
+    {
+        let mut bert_score = SentenceEmbeddingSimilarity::default();
+        bert_score
+            .update((&["hello world", "ping"], &["hi there world!", "pong"]))
+            .expect("lengths should match");
+        dbg!(bert_score.compute());
+    }
 }
