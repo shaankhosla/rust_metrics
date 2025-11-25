@@ -1,5 +1,5 @@
 use crate::core::{Metric, MetricError};
-use crate::utils::verify_range;
+use crate::utils::{verify_binary_label, verify_range};
 
 #[derive(Debug, Clone)]
 pub struct BinaryPrecision {
@@ -37,11 +37,13 @@ impl Metric<(&[f64], &[f64])> for BinaryPrecision {
         }
         for (&prediction, &target) in predictions.iter().zip(targets.iter()) {
             verify_range(prediction, 0.0, 1.0)?;
+            verify_binary_label(target)?;
             if prediction > self.threshold {
                 if target == 1.0 {
                     self.true_positive_ct += 1;
+                } else {
+                    self.false_positive_ct += 1;
                 }
-                self.false_positive_ct += 1;
             }
         }
 
@@ -97,11 +99,13 @@ impl Metric<(&[f64], &[f64])> for BinaryRecall {
         }
         for (&prediction, &target) in predictions.iter().zip(targets.iter()) {
             verify_range(prediction, 0.0, 1.0)?;
+            verify_binary_label(target)?;
             if target == 1.0 {
                 if prediction > self.threshold {
                     self.true_positive_ct += 1;
+                } else {
+                    self.false_negative_ct += 1;
                 }
-                self.false_negative_ct += 1;
             }
         }
 
@@ -124,22 +128,37 @@ impl Metric<(&[f64], &[f64])> for BinaryRecall {
 #[cfg(test)]
 mod tests {
     use super::{BinaryPrecision, BinaryRecall};
-    use crate::core::Metric;
+    use crate::core::{Metric, MetricError};
 
     #[test]
     fn binary_precision_computes_over_batches() {
         let mut precision = BinaryPrecision::default();
 
         precision
-            .update((&[0.8, 0.6, 0.3, 0.1], &[1.0, -1.0, 1.0, -1.0]))
+            .update((&[0.8, 0.6, 0.3, 0.1], &[1.0, 0.0, 1.0, 0.0]))
             .expect("update should succeed");
         precision
             .update((&[0.7], &[1.0]))
             .expect("update should succeed");
-        assert_eq!(precision.compute(), 0.4);
+        assert_eq!(precision.compute(), 2.0 / 3.0);
 
         precision.reset();
         assert_eq!(precision.compute(), 0.0);
+    }
+
+    #[test]
+    fn binary_precision_validates_targets() {
+        let mut precision = BinaryPrecision::default();
+        let err = precision
+            .update((&[0.8], &[2.0]))
+            .expect_err("invalid targets should fail");
+        assert_eq!(
+            err,
+            MetricError::IncompatibleInput {
+                expected: "target must be 0 or 1",
+                got: "other",
+            }
+        );
     }
 
     #[test]
@@ -147,14 +166,29 @@ mod tests {
         let mut recall = BinaryRecall::default();
 
         recall
-            .update((&[0.8, 0.6, 0.3, 0.1], &[1.0, -1.0, 1.0, -1.0]))
+            .update((&[0.8, 0.6, 0.3, 0.1], &[1.0, 0.0, 1.0, 0.0]))
             .expect("update should succeed");
         recall
             .update((&[0.7], &[1.0]))
             .expect("update should succeed");
-        assert_eq!(recall.compute(), 0.4);
+        assert_eq!(recall.compute(), 2.0 / 3.0);
 
         recall.reset();
         assert_eq!(recall.compute(), 0.0);
+    }
+
+    #[test]
+    fn binary_recall_validates_targets() {
+        let mut recall = BinaryRecall::default();
+        let err = recall
+            .update((&[0.8], &[2.0]))
+            .expect_err("invalid targets should fail");
+        assert_eq!(
+            err,
+            MetricError::IncompatibleInput {
+                expected: "target must be 0 or 1",
+                got: "other",
+            }
+        );
     }
 }

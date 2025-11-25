@@ -9,8 +9,8 @@ use crate::{
 
 pub struct SentenceEmbeddingSimilarity {
     model: Arc<Mutex<TextEmbedding>>,
-    predictions: Vec<String>,
-    targets: Vec<String>,
+    prediction_embeddings: Vec<Vec<f32>>,
+    target_embeddings: Vec<Vec<f32>>,
 }
 
 impl Default for SentenceEmbeddingSimilarity {
@@ -25,15 +25,16 @@ impl SentenceEmbeddingSimilarity {
     pub fn new(model: Arc<Mutex<TextEmbedding>>) -> Self {
         Self {
             model,
-            predictions: Vec::new(),
-            targets: Vec::new(),
+            prediction_embeddings: Vec::new(),
+            target_embeddings: Vec::new(),
         }
     }
 
-    fn embed_sentences(&self, sentences: Vec<String>) -> Vec<Vec<f32>> {
+    fn embed_sentences(&self, sentences: &[&str]) -> Vec<Vec<f32>> {
+        let inputs: Vec<String> = sentences.iter().map(|s| (*s).to_string()).collect();
         let mut model = self.model.lock().expect("TextEmbedding lock poisoned");
         model
-            .embed(sentences, None)
+            .embed(inputs, None)
             .expect("Failed to embed sentences")
     }
 }
@@ -49,29 +50,27 @@ impl Metric<(&[&str], &[&str])> for SentenceEmbeddingSimilarity {
             });
         }
 
-        self.predictions
-            .extend(predictions.iter().map(|s| s.to_string()));
-        self.targets.extend(targets.iter().map(|s| s.to_string()));
+        let prediction_embeddings = self.embed_sentences(predictions);
+        let target_embeddings = self.embed_sentences(targets);
+        self.prediction_embeddings.extend(prediction_embeddings);
+        self.target_embeddings.extend(target_embeddings);
 
         Ok(())
     }
 
     fn reset(&mut self) {
-        self.predictions.clear();
-        self.targets.clear();
+        self.prediction_embeddings = Vec::new();
+        self.target_embeddings = Vec::new();
     }
 
     fn compute(&self) -> Self::Output {
-        if self.predictions.is_empty() {
+        if self.prediction_embeddings.is_empty() {
             return Vec::new();
         }
 
-        let prediction_embeddings = self.embed_sentences(self.predictions.clone());
-        let target_embeddings = self.embed_sentences(self.targets.clone());
-
-        prediction_embeddings
+        self.prediction_embeddings
             .iter()
-            .zip(target_embeddings.iter())
+            .zip(self.target_embeddings.iter())
             .map(|(pred, tgt)| cosine_similarity(pred, tgt))
             .collect()
     }

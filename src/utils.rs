@@ -5,7 +5,18 @@ pub fn verify_range(input: f64, min: f64, max: f64) -> Result<(), MetricError> {
         Ok(())
     } else {
         Err(MetricError::IncompatibleInput {
-            expected: "prediction must be between 0 and 1",
+            expected: "value must be within the provided range",
+            got: "other",
+        })
+    }
+}
+
+pub fn verify_binary_label(input: f64) -> Result<(), MetricError> {
+    if input == 0.0 || input == 1.0 {
+        Ok(())
+    } else {
+        Err(MetricError::IncompatibleInput {
+            expected: "target must be 0 or 1",
             got: "other",
         })
     }

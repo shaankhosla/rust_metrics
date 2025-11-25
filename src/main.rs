@@ -28,7 +28,14 @@ fn main() {
     {
         let mut bert_score = SentenceEmbeddingSimilarity::default();
         bert_score
-            .update((&["hello world", "ping"], &["hi there world!", "pong"]))
+            .update((
+                &[
+                    "hello world",
+                    "ping",
+                    "the quick brown fox jumped over the ",
+                ],
+                &["hi there world!", "pong", "gnop"],
+            ))
             .expect("lengths should match");
         dbg!(bert_score.compute());
     }

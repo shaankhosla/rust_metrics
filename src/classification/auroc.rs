@@ -1,7 +1,7 @@
 use std::cmp::Ordering;
 
 use crate::core::{Metric, MetricError};
-use crate::utils::verify_range;
+use crate::utils::{verify_binary_label, verify_range};
 
 #[derive(Debug, Clone)]
 enum BinaryAurocMode {
@@ -59,6 +59,7 @@ impl Metric<(&[f64], &[f64])> for BinaryAuroc {
             BinaryAurocMode::Exact { samples } => {
                 for (&prediction, &target) in predictions.iter().zip(targets.iter()) {
                     verify_range(prediction, 0.0, 1.0)?;
+                    verify_binary_label(target)?;
                     let target_bool = target == 1.0;
                     samples.push((prediction, target_bool));
                 }
@@ -72,6 +73,7 @@ impl Metric<(&[f64], &[f64])> for BinaryAuroc {
                 let max_bin_idx = (*bins - 1) as f64;
                 for (&prediction, &target) in predictions.iter().zip(targets.iter()) {
                     verify_range(prediction, 0.0, 1.0)?;
+                    verify_binary_label(target)?;
                     let bin_index = ((prediction * max_bin_idx).round()) as usize;
                     if target == 1.0 {
                         pos_hist[bin_index] += 1;
