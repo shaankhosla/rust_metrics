@@ -1,17 +1,7 @@
 use std::cmp::Ordering;
 
 use crate::core::{Metric, MetricError};
-
-fn validate_prediction(prediction: f64) -> Result<(), MetricError> {
-    if (0.0..=1.0).contains(&prediction) {
-        Ok(())
-    } else {
-        Err(MetricError::IncompatibleInput {
-            expected: "prediction must be between 0 and 1",
-            got: "other",
-        })
-    }
-}
+use crate::utils::verify_range;
 
 #[derive(Debug, Clone)]
 enum BinaryAurocMode {
@@ -68,7 +58,7 @@ impl Metric<(&[f64], &[f64])> for BinaryAuroc {
         match &mut self.mode {
             BinaryAurocMode::Exact { samples } => {
                 for (&prediction, &target) in predictions.iter().zip(targets.iter()) {
-                    validate_prediction(prediction)?;
+                    verify_range(prediction, 0.0, 1.0)?;
                     let target_bool = target == 1.0;
                     samples.push((prediction, target_bool));
                 }
@@ -81,7 +71,7 @@ impl Metric<(&[f64], &[f64])> for BinaryAuroc {
             } => {
                 let max_bin_idx = (*bins - 1) as f64;
                 for (&prediction, &target) in predictions.iter().zip(targets.iter()) {
-                    validate_prediction(prediction)?;
+                    verify_range(prediction, 0.0, 1.0)?;
                     let bin_index = ((prediction * max_bin_idx).round()) as usize;
                     if target == 1.0 {
                         pos_hist[bin_index] += 1;
