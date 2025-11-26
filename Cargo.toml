@@ -2,6 +2,12 @@
 name = "rust_metrics"
 version = "0.1.0"
 edition = "2024"
+description = "Incremental evaluation metrics for classification and text generation pipelines."
+license = "Apache-2.0"
+repository = "https://github.com/shaankhosla/rust_metrics"
+homepage = "https://github.com/shaankhosla/rust_metrics"
+documentation = "https://docs.rs/rust_metrics"
+readme = "README.md"
 
 [dependencies]
 fastembed = {version="5.3.0", optional=true}
