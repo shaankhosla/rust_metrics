@@ -63,16 +63,18 @@ impl Metric<(&[&str], &[&str])> for SentenceEmbeddingSimilarity {
         self.target_embeddings = Vec::new();
     }
 
-    fn compute(&self) -> Self::Output {
+    fn compute(&self) -> Option<Self::Output> {
         if self.prediction_embeddings.is_empty() {
-            return Vec::new();
+            return None;
         }
 
-        self.prediction_embeddings
-            .iter()
-            .zip(self.target_embeddings.iter())
-            .map(|(pred, tgt)| cosine_similarity(pred, tgt))
-            .collect()
+        Some(
+            self.prediction_embeddings
+                .iter()
+                .zip(self.target_embeddings.iter())
+                .map(|(pred, tgt)| cosine_similarity(pred, tgt))
+                .collect(),
+        )
     }
 }
 
@@ -89,10 +91,10 @@ mod tests {
             .update((&["hello world", "ping"], &["hi there world!", "pong"]))
             .expect("lengths should match");
         let expected_result = [0.6906931228059713, 0.6256474482252247];
-        let result = bert_score.compute();
+        let result = bert_score.compute().unwrap();
         assert_eq!(result, expected_result);
 
         bert_score.reset();
-        assert_eq!(bert_score.compute().len(), 0);
+        assert_eq!(bert_score.compute(), None);
     }
 }

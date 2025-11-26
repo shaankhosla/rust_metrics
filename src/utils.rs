@@ -36,3 +36,7 @@ pub fn cosine_similarity(v1: &[f32], v2: &[f32]) -> f64 {
         dot / (norm1 * norm2)
     }
 }
+
+pub fn tokenize(input: &str) -> Vec<&str> {
+    input.split_whitespace().collect()
+}

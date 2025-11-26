@@ -102,11 +102,11 @@ impl Metric<(&[f64], &[f64])> for BinaryAuroc {
         }
     }
 
-    fn compute(&self) -> Self::Output {
+    fn compute(&self) -> Option<Self::Output> {
         match &self.mode {
             BinaryAurocMode::Exact { samples } => {
                 if samples.is_empty() {
-                    return 0.0;
+                    return None;
                 }
 
                 let mut sorted = samples.to_vec();
@@ -116,7 +116,7 @@ impl Metric<(&[f64], &[f64])> for BinaryAuroc {
                 let total_neg = sorted.len() as f64 - total_pos;
 
                 if total_pos == 0.0 || total_neg == 0.0 {
-                    return 0.0;
+                    return None;
                 }
 
                 let mut tp = 0.0;
@@ -146,7 +146,7 @@ impl Metric<(&[f64], &[f64])> for BinaryAuroc {
                     auc += (fp - prev_fp) * (tp + prev_tp) / 2.0;
                 }
 
-                auc / (total_pos * total_neg)
+                Some(auc / (total_pos * total_neg))
             }
             BinaryAurocMode::Binned {
                 pos_hist, neg_hist, ..
@@ -156,7 +156,7 @@ impl Metric<(&[f64], &[f64])> for BinaryAuroc {
                 let total_pos: f64 = pos_hist.iter().sum::<u64>() as f64;
                 let total_neg: f64 = neg_hist.iter().sum::<u64>() as f64;
                 if total_pos == 0.0 && total_neg == 0.0 {
-                    return 0.0;
+                    return None;
                 }
                 let mut auc = 0.0;
 
@@ -168,7 +168,7 @@ impl Metric<(&[f64], &[f64])> for BinaryAuroc {
                     auc += (fp - prev_fp) * (tp + prev_tp) / 2.0;
                 }
 
-                auc / (total_pos * total_neg)
+                Some(auc / (total_pos * total_neg))
             }
         }
     }
@@ -183,10 +183,10 @@ mod tests {
     fn binary_auroc_binned() {
         let mut auc = BinaryAuroc::new(100);
         let _ = auc.update((&[0.9, 0.8, 0.7, 0.4, 0.2], &[1.0, 1.0, 0.0, 0.0, 1.0]));
-        assert!((auc.compute() - (2.0 / 3.0)).abs() < f64::EPSILON);
+        assert!((auc.compute().unwrap() - (2.0 / 3.0)).abs() < f64::EPSILON);
 
         auc.reset();
-        assert_eq!(auc.compute(), 0.0);
+        assert_eq!(auc.compute(), None);
     }
 
     #[test]
@@ -194,6 +194,6 @@ mod tests {
         let mut auc = BinaryAuroc::new(0);
         let _ = auc.update((&[0.9, 0.8, 0.7, 0.4, 0.2], &[1.0, 1.0, 0.0, 0.0, 1.0]));
         let _ = auc.update((&[0.9, 0.8, 0.7, 0.4, 0.2], &[1.0, 1.0, 0.0, 0.0, 1.0]));
-        assert!((auc.compute() - (2.0 / 3.0)).abs() < f64::EPSILON);
+        assert!((auc.compute().unwrap() - (2.0 / 3.0)).abs() < f64::EPSILON);
     }
 }

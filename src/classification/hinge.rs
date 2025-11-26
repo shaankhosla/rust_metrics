@@ -53,11 +53,11 @@ impl Metric<(&[f64], &[f64])> for BinaryHinge {
         self.total = 0;
     }
 
-    fn compute(&self) -> Self::Output {
+    fn compute(&self) -> Option<Self::Output> {
         if self.total == 0 {
-            return 0.0;
+            return None;
         }
-        self.measures / self.total as f64
+        Some(self.measures / self.total as f64)
     }
 }
 
@@ -73,13 +73,13 @@ mod tests {
         hinge
             .update((&[0.8, -0.6, 0.3, 0.1], &[1.0, -1.0, 1.0, -1.0]))
             .expect("update should succeed");
-        assert_eq!(hinge.compute(), 0.6);
+        assert_eq!(hinge.compute().unwrap(), 0.6);
         hinge
             .update((&[0.7], &[1.0]))
             .expect("update should succeed");
-        assert_eq!(hinge.compute(), 0.54);
+        assert_eq!(hinge.compute().unwrap(), 0.54);
 
         hinge.reset();
-        assert_eq!(hinge.compute(), 0.0);
+        assert_eq!(hinge.compute(), None);
     }
 }

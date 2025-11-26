@@ -55,11 +55,11 @@ impl Metric<(&[f64], &[f64])> for BinaryPrecision {
         self.false_positive_ct = 0;
     }
 
-    fn compute(&self) -> Self::Output {
+    fn compute(&self) -> Option<Self::Output> {
         if self.true_positive_ct + self.false_positive_ct == 0 {
-            return 0.0;
+            return None;
         }
-        self.true_positive_ct as f64 / (self.true_positive_ct + self.false_positive_ct) as f64
+        Some(self.true_positive_ct as f64 / (self.true_positive_ct + self.false_positive_ct) as f64)
     }
 }
 
@@ -117,11 +117,11 @@ impl Metric<(&[f64], &[f64])> for BinaryRecall {
         self.false_negative_ct = 0;
     }
 
-    fn compute(&self) -> Self::Output {
+    fn compute(&self) -> Option<Self::Output> {
         if self.true_positive_ct + self.false_negative_ct == 0 {
-            return 0.0;
+            return None;
         }
-        self.true_positive_ct as f64 / (self.true_positive_ct + self.false_negative_ct) as f64
+        Some(self.true_positive_ct as f64 / (self.true_positive_ct + self.false_negative_ct) as f64)
     }
 }
 
@@ -140,10 +140,10 @@ mod tests {
         precision
             .update((&[0.7], &[1.0]))
             .expect("update should succeed");
-        assert_eq!(precision.compute(), 2.0 / 3.0);
+        assert_eq!(precision.compute().unwrap(), 2.0 / 3.0);
 
         precision.reset();
-        assert_eq!(precision.compute(), 0.0);
+        assert_eq!(precision.compute(), None);
     }
 
     #[test]
@@ -171,10 +171,10 @@ mod tests {
         recall
             .update((&[0.7], &[1.0]))
             .expect("update should succeed");
-        assert_eq!(recall.compute(), 2.0 / 3.0);
+        assert_eq!(recall.compute().unwrap(), 2.0 / 3.0);
 
         recall.reset();
-        assert_eq!(recall.compute(), 0.0);
+        assert_eq!(recall.compute(), None);
     }
 
     #[test]

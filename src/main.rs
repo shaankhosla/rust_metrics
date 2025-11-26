@@ -10,19 +10,19 @@ fn main() {
     accuracy
         .update((&predictions, &targets))
         .expect("lengths should match");
-    println!("Accuracy: {:.2}%", accuracy.compute() * 100.0);
+    println!("Accuracy: {:.2}%", accuracy.compute().unwrap() * 100.0);
 
     let predictions = [0.3, 0.2, 0.2, 0.5];
     let targets = [0.0, 1.0, 0.0, 0.0];
     let mut auc = BinaryAuroc::new(10000);
     auc.update((&predictions, &targets))
         .expect("lengths should match");
-    println!("Approximated AUC: {:.2}%", auc.compute() * 100.0);
+    println!("Approximated AUC: {:.2}%", auc.compute().unwrap() * 100.0);
 
     let mut auc = BinaryAuroc::new(0);
     auc.update((&predictions, &targets))
         .expect("lengths should match");
-    println!("AUC: {:.2}%", auc.compute() * 100.0);
+    println!("AUC: {:.2}%", auc.compute().unwrap() * 100.0);
 
     #[cfg(feature = "text-bert")]
     {

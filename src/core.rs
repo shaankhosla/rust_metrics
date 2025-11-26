@@ -1,9 +1,21 @@
 #[derive(Debug, PartialEq, Eq)]
 pub enum MetricError {
-    LengthMismatch { predictions: usize, targets: usize },
-    InvalidClassIndex { class: usize, num_classes: usize },
-    InvalidLabelShape { total_labels: usize, num_labels: usize },
-    IncompatibleInput { expected: &'static str, got: &'static str },
+    LengthMismatch {
+        predictions: usize,
+        targets: usize,
+    },
+    InvalidClassIndex {
+        class: usize,
+        num_classes: usize,
+    },
+    InvalidLabelShape {
+        total_labels: usize,
+        num_labels: usize,
+    },
+    IncompatibleInput {
+        expected: &'static str,
+        got: &'static str,
+    },
 }
 
 pub trait Metric<Input> {
@@ -13,5 +25,5 @@ pub trait Metric<Input> {
 
     fn reset(&mut self);
 
-    fn compute(&self) -> Self::Output;
+    fn compute(&self) -> Option<Self::Output>;
 }

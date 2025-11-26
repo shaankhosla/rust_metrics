@@ -44,11 +44,11 @@ impl Metric<(&[usize], &[usize])> for BinaryAccuracy {
         self.total = 0;
     }
 
-    fn compute(&self) -> Self::Output {
+    fn compute(&self) -> Option<Self::Output> {
         if self.total == 0 {
-            0.0
+            None
         } else {
-            self.correct as f64 / self.total as f64
+            Some(self.correct as f64 / self.total as f64)
         }
     }
 }
@@ -114,11 +114,11 @@ impl Metric<(&[usize], &[usize])> for MulticlassAccuracy {
         self.total = 0;
     }
 
-    fn compute(&self) -> Self::Output {
+    fn compute(&self) -> Option<Self::Output> {
         if self.total == 0 {
-            0.0
+            None
         } else {
-            self.correct as f64 / self.total as f64
+            Some(self.correct as f64 / self.total as f64)
         }
     }
 }
@@ -175,11 +175,11 @@ impl Metric<(&[bool], &[bool])> for MultilabelAccuracy {
         self.total = 0;
     }
 
-    fn compute(&self) -> Self::Output {
+    fn compute(&self) -> Option<Self::Output> {
         if self.total == 0 {
-            0.0
+            None
         } else {
-            self.correct as f64 / self.total as f64
+            Some(self.correct as f64 / self.total as f64)
         }
     }
 }
@@ -193,18 +193,14 @@ mod tests {
     fn binary_accuracy_computes_over_batches() {
         let mut accuracy = BinaryAccuracy::new();
 
-        accuracy
-            .update((&[0, 1, 0], &[0, 1, 1]))
-            .expect("update should succeed");
-        assert!((accuracy.compute() - (2.0 / 3.0)).abs() < f64::EPSILON);
+        accuracy.update((&[0, 1, 0], &[0, 1, 1])).unwrap();
+        assert!((accuracy.compute().unwrap() - (2.0 / 3.0)).abs() < f64::EPSILON);
 
-        accuracy
-            .update((&[1, 0], &[1, 0]))
-            .expect("update should succeed");
-        assert!((accuracy.compute() - 0.8).abs() < f64::EPSILON);
+        accuracy.update((&[1, 0], &[1, 0])).unwrap();
+        assert!((accuracy.compute().unwrap() - 0.8).abs() < f64::EPSILON);
 
         accuracy.reset();
-        assert_eq!(accuracy.compute(), 0.0);
+        assert_eq!(accuracy.compute(), None);
     }
 
     #[test]
@@ -244,10 +240,8 @@ mod tests {
     fn multiclass_accuracy_computes_correctly() {
         let mut accuracy = MulticlassAccuracy::new(3);
 
-        accuracy
-            .update((&[0, 1, 2, 2], &[0, 1, 1, 2]))
-            .expect("valid classes should succeed");
-        assert!((accuracy.compute() - 0.75).abs() < f64::EPSILON);
+        accuracy.update((&[0, 1, 2, 2], &[0, 1, 1, 2])).unwrap();
+        assert!((accuracy.compute().unwrap() - 0.75).abs() < f64::EPSILON);
     }
 
     #[test]
@@ -276,6 +270,6 @@ mod tests {
         accuracy
             .update((&preds, &targets))
             .expect("valid multilabel batch");
-        assert!((accuracy.compute() - (4.0 / 6.0)).abs() < f64::EPSILON);
+        assert!((accuracy.compute().unwrap() - (4.0 / 6.0)).abs() < f64::EPSILON);
     }
 }

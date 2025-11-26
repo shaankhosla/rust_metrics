@@ -9,5 +9,7 @@ pub use classification::{
 };
 pub use core::{Metric, MetricError};
 
+pub use text::Bleu;
+
 #[cfg(feature = "text-bert")]
 pub use text::SentenceEmbeddingSimilarity;
