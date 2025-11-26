@@ -5,4 +5,7 @@ pub mod bert;
 pub use bert::SentenceEmbeddingSimilarity;
 
 pub mod bleu;
+pub mod edit;
+
 pub use bleu::Bleu;
+pub use edit::EditDistance;

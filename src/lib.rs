@@ -9,7 +9,7 @@ pub use classification::{
 };
 pub use core::{Metric, MetricError};
 
-pub use text::Bleu;
+pub use text::{Bleu, EditDistance};
 
 #[cfg(feature = "text-bert")]
 pub use text::SentenceEmbeddingSimilarity;

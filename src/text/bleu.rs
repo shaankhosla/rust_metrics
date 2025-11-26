@@ -88,39 +88,52 @@ impl Metric<(&[&str], &[&str])> for Bleu {
     }
 
     fn compute(&self) -> Option<Self::Output> {
-        if self.denominator.contains(&0.0) {
+        if self.preds_len == 0 || self.targets_len == 0 {
             return None;
         }
 
-        let precisions: Vec<f64> = self
-            .numerator
-            .iter()
-            .zip(&self.denominator)
-            .map(|(&num, &den)| {
-                if den == 0.0 {
-                    0.0
-                } else if num == 0.0 && self.smooth {
-                    1e-9
-                } else {
-                    num / den
-                }
-            })
-            .collect();
-
-        let c = self.preds_len as f64;
-        let r = self.targets_len as f64;
-        let bp = if c < r { (-1.0 + r / c).exp() } else { 1.0 };
-
-        let mut log_sum = 0.0;
-        let valid_precisions: Vec<f64> = precisions.iter().cloned().filter(|&p| p > 0.0).collect();
-        if valid_precisions.is_empty() {
+        if self.numerator.first().copied().unwrap_or(0.0) == 0.0 {
             return Some(0.0);
         }
 
-        for p in &precisions {
-            log_sum += p.max(1e-16).ln();
+        if !self.smooth && self.numerator.contains(&0.0) {
+            return Some(0.0);
         }
-        let geo_mean = (log_sum / self.n_gram as f64).exp();
+
+        let precision_scores: Vec<f64> = if self.smooth {
+            let mut precisions: Vec<f64> = self
+                .numerator
+                .iter()
+                .zip(&self.denominator)
+                .map(|(&num, &den)| (num + 1.0) / (den + 1.0))
+                .collect();
+
+            if let (Some(first), Some(&den)) = (precisions.get_mut(0), self.denominator.first()) {
+                *first = self.numerator[0] / den;
+            }
+
+            precisions
+        } else {
+            self.numerator
+                .iter()
+                .zip(&self.denominator)
+                .map(|(&num, &den)| num / den)
+                .collect()
+        };
+
+        if precision_scores.iter().any(|&p| p <= 0.0) {
+            return Some(0.0);
+        }
+
+        let log_precision_sum: f64 = precision_scores
+            .iter()
+            .map(|&p| p.ln() / self.n_gram as f64)
+            .sum();
+        let geo_mean = log_precision_sum.exp();
+
+        let c = self.preds_len as f64;
+        let r = self.targets_len as f64;
+        let bp = if c > r { 1.0 } else { (1.0 - r / c).exp() };
 
         Some(bp * geo_mean)
     }
@@ -150,5 +163,19 @@ mod tests {
         bleu.update((&preds, &targets)).unwrap();
         let score = bleu.compute().unwrap();
         assert!((score - 0.668740304976422).abs() < f64::EPSILON);
+    }
+
+    #[test]
+    fn smoothing_prevents_zero_score() {
+        let preds = vec!["the cat sits"];
+        let targets = vec!["the dog sits"];
+
+        let mut bleu = Bleu::new(2, false);
+        bleu.update((&preds, &targets)).unwrap();
+        assert_eq!(bleu.compute().unwrap(), 0.0);
+
+        let mut smoothed = Bleu::new(2, true);
+        smoothed.update((&preds, &targets)).unwrap();
+        assert!(smoothed.compute().unwrap() > 0.0);
     }
 }
