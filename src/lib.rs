@@ -1,3 +1,5 @@
+#![doc = include_str!("../README.md")]
+
 pub mod classification;
 pub mod core;
 pub mod text;
@@ -11,5 +13,6 @@ pub use core::{Metric, MetricError};
 
 pub use text::{Bleu, EditDistance};
 
+#[cfg_attr(docsrs, doc(cfg(feature = "text-bert")))]
 #[cfg(feature = "text-bert")]
 pub use text::SentenceEmbeddingSimilarity;

@@ -7,6 +7,18 @@ use crate::{
     utils::cosine_similarity,
 };
 
+/// Cosine similarity between sentence embeddings produced by `fastembed`.
+///
+/// Requires the `text-bert` feature.
+///
+/// ```rust,ignore
+/// use rust_metrics::{Metric, SentenceEmbeddingSimilarity};
+///
+/// let mut metric = SentenceEmbeddingSimilarity::default();
+/// metric.update((&["hello world"], &["hi world"])).unwrap();
+/// assert_eq!(metric.compute().unwrap().len(), 1);
+/// ```
+#[cfg_attr(docsrs, doc(cfg(feature = "text-bert")))]
 pub struct SentenceEmbeddingSimilarity {
     model: Arc<Mutex<TextEmbedding>>,
     prediction_embeddings: Vec<Vec<f32>>,

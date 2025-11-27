@@ -1,12 +1,26 @@
 use crate::core::{Metric, MetricError};
 use crate::utils::levenshtein_distance;
 
+/// Reduction strategy used by [`EditDistance`].
 #[derive(Debug, Clone, PartialEq)]
 pub enum Reduction {
+    /// Return the sum of edit distances in the buffer.
     Sum,
+    /// Return the mean edit distance over observed pairs.
     Mean,
 }
 
+/// Streaming Levenshtein distance.
+///
+/// ```
+/// use rust_metrics::{EditDistance, Metric};
+///
+/// let preds = ["kitten"];
+/// let targets = ["sitting"];
+/// let mut edit = EditDistance::default();
+/// edit.update((&preds, &targets)).unwrap();
+/// assert_eq!(edit.compute(), Some(3.0));
+/// ```
 #[derive(Debug, Clone)]
 pub struct EditDistance {
     reduction: Reduction,

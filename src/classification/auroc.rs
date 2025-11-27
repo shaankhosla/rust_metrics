@@ -15,6 +15,15 @@ enum BinaryAurocMode {
     },
 }
 
+/// ROC AUC for binary classification with exact or histogrammed accumulation.
+///
+/// ```
+/// use rust_metrics::{BinaryAuroc, Metric};
+///
+/// let mut auroc = BinaryAuroc::new(0); // 0 => exact mode
+/// auroc.update((&[0.9, 0.2], &[1.0, 0.0])).unwrap();
+/// assert!(auroc.compute().unwrap() > 0.9);
+/// ```
 #[derive(Debug, Clone)]
 pub struct BinaryAuroc {
     mode: BinaryAurocMode,

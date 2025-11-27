@@ -1,3 +1,7 @@
+//! Text generation metrics: BLEU, edit distance, and optional BERT similarities.
+//!
+//! All types implement [`Metric`](crate::core::Metric) for batched updates.
+
 #[cfg(feature = "text-bert")]
 pub mod bert;
 

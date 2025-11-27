@@ -1,6 +1,15 @@
 use crate::core::{Metric, MetricError};
 use crate::utils::{verify_binary_label, verify_range};
 
+/// Thresholded precision for binary classification probabilities.
+///
+/// ```
+/// use rust_metrics::{BinaryPrecision, Metric};
+///
+/// let mut precision = BinaryPrecision::new(0.5);
+/// precision.update((&[0.9, 0.4], &[1.0, 0.0])).unwrap();
+/// assert_eq!(precision.compute(), Some(1.0));
+/// ```
 #[derive(Debug, Clone)]
 pub struct BinaryPrecision {
     threshold: f64,
@@ -63,6 +72,15 @@ impl Metric<(&[f64], &[f64])> for BinaryPrecision {
     }
 }
 
+/// Thresholded recall for binary classification probabilities.
+///
+/// ```
+/// use rust_metrics::{BinaryRecall, Metric};
+///
+/// let mut recall = BinaryRecall::new(0.5);
+/// recall.update((&[0.9, 0.4], &[1.0, 1.0])).unwrap();
+/// assert_eq!(recall.compute(), Some(0.5));
+/// ```
 #[derive(Debug, Clone)]
 pub struct BinaryRecall {
     threshold: f64,

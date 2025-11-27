@@ -1,6 +1,15 @@
 use crate::core::{Metric, MetricError};
 use crate::utils::verify_range;
 
+/// Online hinge loss for binary classification.
+///
+/// ```
+/// use rust_metrics::{BinaryHinge, Metric};
+///
+/// let mut hinge = BinaryHinge::default();
+/// hinge.update((&[0.8, -0.6], &[1.0, -1.0])).unwrap();
+/// assert!(hinge.compute().unwrap() >= 0.0);
+/// ```
 #[derive(Debug, Clone)]
 pub struct BinaryHinge {
     squared: bool,

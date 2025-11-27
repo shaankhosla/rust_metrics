@@ -2,6 +2,17 @@ use crate::core::{Metric, MetricError};
 use crate::utils::tokenize;
 use std::collections::HashMap;
 
+/// Cumulative BLEU score with optional smoothing and arbitrary n-gram depth.
+///
+/// ```
+/// use rust_metrics::{Bleu, Metric};
+///
+/// let preds = ["the cat is on the mat"];
+/// let targets = ["the cat is on the mat"];
+/// let mut bleu = Bleu::default();
+/// bleu.update((&preds, &targets)).unwrap();
+/// assert_eq!(bleu.compute(), Some(1.0));
+/// ```
 #[derive(Debug, Clone)]
 pub struct Bleu {
     n_gram: usize,

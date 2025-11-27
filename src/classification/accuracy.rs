@@ -1,5 +1,16 @@
 use crate::core::{Metric, MetricError};
 
+/// Running accuracy for binary classification tasks (`0/1` labels).
+///
+/// ```
+/// use rust_metrics::{BinaryAccuracy, Metric};
+///
+/// let predictions = [0_usize, 1, 1];
+/// let targets = [0_usize, 1, 0];
+/// let mut metric = BinaryAccuracy::new();
+/// metric.update((&predictions, &targets)).unwrap();
+/// assert_eq!(metric.compute(), Some(2.0 / 3.0));
+/// ```
 #[derive(Debug, Default, Clone)]
 pub struct BinaryAccuracy {
     correct: usize,
@@ -53,6 +64,15 @@ impl Metric<(&[usize], &[usize])> for BinaryAccuracy {
     }
 }
 
+/// Multiclass accuracy that validates class indices on every batch.
+///
+/// ```
+/// use rust_metrics::{Metric, MulticlassAccuracy};
+///
+/// let mut metric = MulticlassAccuracy::new(3);
+/// metric.update((&[0_usize, 2], &[0_usize, 1])).unwrap();
+/// assert_eq!(metric.compute(), Some(0.5));
+/// ```
 #[derive(Debug, Clone)]
 pub struct MulticlassAccuracy {
     num_classes: usize,
@@ -123,6 +143,17 @@ impl Metric<(&[usize], &[usize])> for MulticlassAccuracy {
     }
 }
 
+/// Multilabel accuracy over flattened bool tensors.
+///
+/// ```
+/// use rust_metrics::{Metric, MultilabelAccuracy};
+///
+/// let preds = [true, false, true, false];
+/// let targets = [true, true, false, false];
+/// let mut metric = MultilabelAccuracy::new(2);
+/// metric.update((&preds, &targets)).unwrap();
+/// assert_eq!(metric.compute(), Some(0.5));
+/// ```
 #[derive(Debug, Clone)]
 pub struct MultilabelAccuracy {
     num_labels: usize,
