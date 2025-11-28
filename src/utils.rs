@@ -87,7 +87,7 @@ pub struct ConfusionMatrix {
     pub false_positive: usize,
     pub false_negative: usize,
     pub true_negative: usize,
-    total: usize,
+    pub total: usize,
     threshold: f64,
 }
 impl Default for ConfusionMatrix {
@@ -117,19 +117,17 @@ impl ConfusionMatrix {
     pub fn update(&mut self, y_pred: f64, y_true: f64) -> Result<(), MetricError> {
         verify_range(y_pred, 0.0, 1.0)?;
         verify_binary_label(y_true)?;
-        if y_pred > self.threshold {
-            if y_true == 1.0 {
-                self.true_positive += 1;
-            } else {
-                self.false_positive += 1;
-            }
-        } else {
-            if y_true == 1.0 {
-                self.false_negative += 1;
-            } else {
-                self.true_negative += 1;
-            }
+
+        let prediction: bool = y_pred > self.threshold;
+        let actual: bool = y_true == 1.0;
+
+        match (prediction, actual) {
+            (true, true) => self.true_positive += 1,
+            (true, false) => self.false_positive += 1,
+            (false, true) => self.false_negative += 1,
+            (false, false) => self.true_negative += 1,
         }
+
         self.total += 1;
         Ok(())
     }

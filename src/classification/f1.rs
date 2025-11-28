@@ -1,5 +1,5 @@
 use crate::core::{Metric, MetricError};
-use crate::utils::verify_range;
+use crate::utils::{ConfusionMatrix, verify_range};
 
 /// Online F1 Score for binary classification.
 ///
@@ -7,15 +7,13 @@ use crate::utils::verify_range;
 /// use rust_metrics::{BinaryF1Score, Metric};
 ///
 /// let mut f1 = BinaryF1Score::default();
-/// f1.update((&[0.8, -0.6], &[1.0, -1.0])).unwrap();
+/// f1.update((&[0.0, 0.0, 1.0, 1.0, 0.0, 1.0],
+/// &[0.0, 1.0, 0.0, 1.0, 0.0, 1.0])).unwrap();
 /// assert!(f1.compute().unwrap() >= 0.0);
 /// ```
 #[derive(Debug, Clone)]
 pub struct BinaryF1Score {
-    threshold: f64,
-    squared: bool,
-    measures: f64,
-    total: usize,
+    confusion_matrix: ConfusionMatrix,
 }
 
 impl Default for BinaryF1Score {
@@ -26,11 +24,8 @@ impl Default for BinaryF1Score {
 
 impl BinaryF1Score {
     pub fn new(threshold: f64) -> Self {
-        Self {
-            threshold,
-            measures: 0.0,
-            total: 0,
-        }
+        let confusion_matrix = ConfusionMatrix::new(threshold);
+        Self { confusion_matrix }
     }
 }
 
@@ -44,20 +39,26 @@ impl Metric<(&[f64], &[f64])> for BinaryF1Score {
                 targets: targets.len(),
             });
         }
+        for (&prediction, &target) in predictions.iter().zip(targets.iter()) {
+            self.confusion_matrix.update(prediction, target)?;
+        }
 
         Ok(())
     }
 
     fn reset(&mut self) {
-        self.measures = 0.0;
-        self.total = 0;
+        self.confusion_matrix.reset();
     }
 
     fn compute(&self) -> Option<Self::Output> {
-        if self.total == 0 {
+        if self.confusion_matrix.total == 0 {
             return None;
         }
-        Some(self.measures / self.total as f64)
+        let precision = self.confusion_matrix.true_positive as f64
+            / (self.confusion_matrix.true_positive + self.confusion_matrix.false_positive) as f64;
+        let recall = self.confusion_matrix.true_positive as f64
+            / (self.confusion_matrix.true_positive + self.confusion_matrix.false_negative) as f64;
+        Some(2.0 * precision * recall / (precision + recall))
     }
 }
 
@@ -67,19 +68,19 @@ mod tests {
     use crate::core::Metric;
 
     #[test]
-    fn binary_hinge_computes_over_batches() {
-        let mut hinge = BinaryHinge::default();
+    fn f1_computes_over_batches() {
+        let mut f1 = BinaryF1Score::default();
 
-        hinge
-            .update((&[0.8, -0.6, 0.3, 0.1], &[1.0, -1.0, 1.0, -1.0]))
-            .expect("update should succeed");
-        assert_eq!(hinge.compute().unwrap(), 0.6);
-        hinge
-            .update((&[0.7], &[1.0]))
-            .expect("update should succeed");
-        assert_eq!(hinge.compute().unwrap(), 0.54);
+        f1.update((
+            &[0.0, 0.0, 1.0, 1.0, 0.0, 1.0],
+            &[0.0, 1.0, 0.0, 1.0, 0.0, 1.0],
+        ))
+        .expect("update should succeed");
+        assert!((f1.compute().unwrap() - 2.0 / 3.0).abs() < f64::EPSILON);
+        f1.update((&[0.7], &[1.0])).expect("update should succeed");
+        assert_eq!(f1.compute().unwrap(), 0.75);
 
-        hinge.reset();
-        assert_eq!(hinge.compute(), None);
+        f1.reset();
+        assert_eq!(f1.compute(), None);
     }
 }

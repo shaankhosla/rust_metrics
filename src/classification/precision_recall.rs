@@ -1,5 +1,5 @@
 use crate::core::{Metric, MetricError};
-use crate::utils::{ConfusionMatrix, verify_range};
+use crate::utils::ConfusionMatrix;
 
 /// Thresholded precision for binary classification probabilities.
 ///
@@ -23,7 +23,6 @@ impl Default for BinaryPrecision {
 
 impl BinaryPrecision {
     pub fn new(threshold: f64) -> Self {
-        verify_range(threshold, 0.0, 1.0).unwrap();
         let confusion_matrix = ConfusionMatrix::new(threshold);
         Self { confusion_matrix }
     }
@@ -51,7 +50,7 @@ impl Metric<(&[f64], &[f64])> for BinaryPrecision {
     }
 
     fn compute(&self) -> Option<Self::Output> {
-        if self.confusion_matrix.true_positive + self.confusion_matrix.false_positive == 0 {
+        if self.confusion_matrix.total == 0 {
             return None;
         }
         Some(
@@ -111,7 +110,7 @@ impl Metric<(&[f64], &[f64])> for BinaryRecall {
     }
 
     fn compute(&self) -> Option<Self::Output> {
-        if self.confusion_matrix.true_positive + self.confusion_matrix.false_negative == 0 {
+        if self.confusion_matrix.total == 0 {
             return None;
         }
         Some(
