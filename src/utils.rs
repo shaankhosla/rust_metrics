@@ -81,6 +81,58 @@ pub fn levenshtein_distance(s1: &str, s2: &str) -> usize {
     dp[len1][len2]
 }
 
+#[derive(Debug, Clone)]
+pub struct ConfusionMatrix {
+    pub true_positive: usize,
+    pub false_positive: usize,
+    pub false_negative: usize,
+    pub true_negative: usize,
+    pub total: usize,
+    threshold: f64,
+}
+impl Default for ConfusionMatrix {
+    fn default() -> Self {
+        Self::new(0.5)
+    }
+}
+impl ConfusionMatrix {
+    pub fn new(threshold: f64) -> Self {
+        verify_range(threshold, 0.0, 1.0).unwrap();
+        Self {
+            true_positive: 0,
+            false_positive: 0,
+            false_negative: 0,
+            true_negative: 0,
+            total: 0,
+            threshold,
+        }
+    }
+    pub fn reset(&mut self) {
+        self.true_positive = 0;
+        self.false_positive = 0;
+        self.false_negative = 0;
+        self.true_negative = 0;
+        self.total = 0;
+    }
+    pub fn update(&mut self, y_pred: f64, y_true: f64) -> Result<(), MetricError> {
+        verify_range(y_pred, 0.0, 1.0)?;
+        verify_binary_label(y_true)?;
+
+        let prediction: bool = y_pred > self.threshold;
+        let actual: bool = y_true == 1.0;
+
+        match (prediction, actual) {
+            (true, true) => self.true_positive += 1,
+            (true, false) => self.false_positive += 1,
+            (false, true) => self.false_negative += 1,
+            (false, false) => self.true_negative += 1,
+        }
+
+        self.total += 1;
+        Ok(())
+    }
+}
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 pub enum Reduction {
     Sum,
