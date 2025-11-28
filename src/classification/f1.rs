@@ -1,5 +1,5 @@
 use crate::core::{Metric, MetricError};
-use crate::utils::{ConfusionMatrix, verify_range};
+use crate::utils::ConfusionMatrix;
 
 /// Online F1 Score for binary classification.
 ///

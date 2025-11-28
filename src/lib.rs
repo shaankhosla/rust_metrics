@@ -11,7 +11,7 @@ pub use classification::{
     MulticlassAccuracy, MultilabelAccuracy,
 };
 pub use core::{Metric, MetricError};
-pub use regression::{MeanAbsoluteError, MeanSquaredError, R2Score};
+pub use regression::{MeanAbsoluteError, MeanAbsolutePercentageError, MeanSquaredError, R2Score};
 
 pub use text::{Bleu, EditDistance};
 

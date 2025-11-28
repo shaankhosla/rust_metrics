@@ -45,6 +45,7 @@ assert!(auroc.compute().unwrap() > 0.6);
 
 - `MeanSquaredError`
 - `MeanAbsoluteError`
+- `MeanAbsolutePercentageError`
 - `R2Score`
 
 ### Text
