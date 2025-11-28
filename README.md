@@ -1,9 +1,7 @@
 # rust_metrics
 
-`rust_metrics` is a rust-native evaluation toolkit that provides incremental metrics for
-classification and text generation pipelines. Each metric implements the same incremental
-`Metric` trait, so you can feed batched predictions over time and ask for the final score when
-ready.
+`rust_metrics` is an ML evaluation toolkit that brings [Torchmetrics](https://github.com/Lightning-AI/torchmetrics)-style metrics to Rust. Each metric implements the same incremental
+`Metric` trait, so you can feed batched predictions over time and ask for the final score when ready.
 
 ## Getting started
 
