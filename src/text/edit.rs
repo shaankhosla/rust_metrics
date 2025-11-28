@@ -1,14 +1,5 @@
 use crate::core::{Metric, MetricError};
-use crate::utils::levenshtein_distance;
-
-/// Reduction strategy used by [`EditDistance`].
-#[derive(Debug, Clone, PartialEq)]
-pub enum Reduction {
-    /// Return the sum of edit distances in the buffer.
-    Sum,
-    /// Return the mean edit distance over observed pairs.
-    Mean,
-}
+use crate::utils::{MetricAggregator, Reduction, levenshtein_distance};
 
 /// Streaming Levenshtein distance.
 ///
@@ -23,9 +14,7 @@ pub enum Reduction {
 /// ```
 #[derive(Debug, Clone)]
 pub struct EditDistance {
-    reduction: Reduction,
-    edit_scores: Vec<f64>,
-    total: usize,
+    metric_aggregator: MetricAggregator,
 }
 
 impl Default for EditDistance {
@@ -37,9 +26,7 @@ impl Default for EditDistance {
 impl EditDistance {
     pub fn new(reduction: Reduction) -> Self {
         Self {
-            reduction,
-            edit_scores: vec![],
-            total: 0,
+            metric_aggregator: MetricAggregator::new(reduction),
         }
     }
 }
@@ -54,27 +41,19 @@ impl Metric<(&[&str], &[&str])> for EditDistance {
                 targets: targets.len(),
             });
         }
-        self.total += predictions.len();
         for (&prediction, &target) in predictions.iter().zip(targets.iter()) {
             let edit_distance = levenshtein_distance(prediction, target) as f64;
-            self.edit_scores.push(edit_distance);
+            self.metric_aggregator.update(edit_distance);
         }
         Ok(())
     }
 
     fn reset(&mut self) {
-        self.total = 0;
-        self.edit_scores.clear();
+        self.metric_aggregator.reset();
     }
 
     fn compute(&self) -> Option<Self::Output> {
-        if self.total == 0 {
-            return None;
-        }
-        if self.reduction == Reduction::Sum {
-            return Some(self.edit_scores.iter().sum::<f64>());
-        }
-        Some(self.edit_scores.iter().sum::<f64>() / self.total as f64)
+        self.metric_aggregator.compute()
     }
 }
 

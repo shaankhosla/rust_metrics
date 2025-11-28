@@ -28,7 +28,7 @@ assert_eq!(accuracy.compute(), Some(0.75));
 let scores = [0.9, 0.6, 0.1, 0.2];
 let mut auroc = BinaryAuroc::new(0); // 0 => compute exact ROC AUC
 auroc.update((&scores, &targets.map(|t| t as f64))).unwrap();
-assert!(auroc.compute().unwrap() > 0.9);
+assert!(auroc.compute().unwrap() > 0.6);
 ```
 
 ## Available metrics
@@ -39,6 +39,12 @@ assert!(auroc.compute().unwrap() > 0.9);
 - `BinaryPrecision`, `BinaryRecall`
 - `BinaryHinge`
 - `BinaryAuroc` (exact or binned ROC AUC)
+
+### Regression
+
+- `MeanSquaredError`
+- `MeanAbsoluteError`
+- `R2Score`
 
 ### Text
 

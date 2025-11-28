@@ -2,14 +2,16 @@
 
 pub mod classification;
 pub mod core;
+pub mod regression;
 pub mod text;
 pub mod utils;
 
 pub use classification::{
-    BinaryAccuracy, BinaryAuroc, BinaryPrecision, BinaryRecall, MulticlassAccuracy,
+    BinaryAccuracy, BinaryAuroc, BinaryHinge, BinaryPrecision, BinaryRecall, MulticlassAccuracy,
     MultilabelAccuracy,
 };
 pub use core::{Metric, MetricError};
+pub use regression::{MeanAbsoluteError, MeanSquaredError, R2Score};
 
 pub use text::{Bleu, EditDistance};
 

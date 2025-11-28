@@ -2,15 +2,9 @@
 #[derive(Debug, PartialEq, Eq)]
 pub enum MetricError {
     /// `predictions.len()` and `targets.len()` differ.
-    LengthMismatch {
-        predictions: usize,
-        targets: usize,
-    },
+    LengthMismatch { predictions: usize, targets: usize },
     /// A class index is outside the configured range.
-    InvalidClassIndex {
-        class: usize,
-        num_classes: usize,
-    },
+    InvalidClassIndex { class: usize, num_classes: usize },
     /// Multilabel inputs do not align with the expected shape.
     InvalidLabelShape {
         total_labels: usize,

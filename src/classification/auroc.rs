@@ -204,5 +204,11 @@ mod tests {
         let _ = auc.update((&[0.9, 0.8, 0.7, 0.4, 0.2], &[1.0, 1.0, 0.0, 0.0, 1.0]));
         let _ = auc.update((&[0.9, 0.8, 0.7, 0.4, 0.2], &[1.0, 1.0, 0.0, 0.0, 1.0]));
         assert!((auc.compute().unwrap() - (2.0 / 3.0)).abs() < f64::EPSILON);
+
+        let scores = [0.9, 0.6, 0.1, 0.2];
+        let targets = [0, 1, 0, 0];
+        let mut auroc = BinaryAuroc::new(0); // 0 => compute exact ROC AUC
+        auroc.update((&scores, &targets.map(|t| t as f64))).unwrap();
+        assert!(auroc.compute().unwrap() > 0.6);
     }
 }
