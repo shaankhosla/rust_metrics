@@ -5,10 +5,12 @@
 
 pub mod accuracy;
 pub mod auroc;
+pub mod f1;
 pub mod hinge;
 pub mod precision_recall;
 
 pub use accuracy::{BinaryAccuracy, MulticlassAccuracy, MultilabelAccuracy};
 pub use auroc::BinaryAuroc;
+pub use f1::BinaryF1Score;
 pub use hinge::BinaryHinge;
 pub use precision_recall::{BinaryPrecision, BinaryRecall};
