@@ -39,6 +39,7 @@ assert!(auroc.compute().unwrap() > 0.6);
 - `BinaryPrecision`, `BinaryRecall`
 - `BinaryHinge`
 - `BinaryAuroc` (exact or binned ROC AUC)
+- `BinaryF1Score`
 
 ### Regression
 
