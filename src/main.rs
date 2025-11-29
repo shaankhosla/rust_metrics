@@ -13,7 +13,7 @@ fn main() {
     println!("Accuracy: {:.2}%", accuracy.compute().unwrap() * 100.0);
 
     let predictions = [0.3, 0.2, 0.2, 0.5];
-    let targets = [0.0, 1.0, 0.0, 0.0];
+    let targets = [0_usize, 1, 0, 0];
     let mut auc = BinaryAuroc::new(10000);
     auc.update((&predictions, &targets))
         .expect("lengths should match");

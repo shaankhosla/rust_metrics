@@ -7,7 +7,7 @@ use crate::utils::ConfusionMatrix;
 /// use rust_metrics::{BinaryPrecision, Metric};
 ///
 /// let mut precision = BinaryPrecision::new(0.5);
-/// precision.update((&[0.9, 0.4], &[1.0, 0.0])).unwrap();
+/// precision.update((&[0.9, 0.4], &[1_usize, 0])).unwrap();
 /// assert_eq!(precision.compute(), Some(1.0));
 /// ```
 #[derive(Debug, Clone)]
@@ -28,10 +28,10 @@ impl BinaryPrecision {
     }
 }
 
-impl Metric<(&[f64], &[f64])> for BinaryPrecision {
+impl Metric<(&[f64], &[usize])> for BinaryPrecision {
     type Output = f64;
 
-    fn update(&mut self, (predictions, targets): (&[f64], &[f64])) -> Result<(), MetricError> {
+    fn update(&mut self, (predictions, targets): (&[f64], &[usize])) -> Result<(), MetricError> {
         if predictions.len() != targets.len() {
             return Err(MetricError::LengthMismatch {
                 predictions: predictions.len(),
@@ -67,7 +67,7 @@ impl Metric<(&[f64], &[f64])> for BinaryPrecision {
 /// use rust_metrics::{BinaryRecall, Metric};
 ///
 /// let mut recall = BinaryRecall::new(0.5);
-/// recall.update((&[0.9, 0.4], &[1.0, 1.0])).unwrap();
+/// recall.update((&[0.9, 0.4], &[1_usize, 1])).unwrap();
 /// assert_eq!(recall.compute(), Some(0.5));
 /// ```
 #[derive(Debug, Clone)]
@@ -88,10 +88,10 @@ impl BinaryRecall {
     }
 }
 
-impl Metric<(&[f64], &[f64])> for BinaryRecall {
+impl Metric<(&[f64], &[usize])> for BinaryRecall {
     type Output = f64;
 
-    fn update(&mut self, (predictions, targets): (&[f64], &[f64])) -> Result<(), MetricError> {
+    fn update(&mut self, (predictions, targets): (&[f64], &[usize])) -> Result<(), MetricError> {
         if predictions.len() != targets.len() {
             return Err(MetricError::LengthMismatch {
                 predictions: predictions.len(),
@@ -131,10 +131,10 @@ mod tests {
         let mut precision = BinaryPrecision::default();
 
         precision
-            .update((&[0.8, 0.6, 0.3, 0.1], &[1.0, 0.0, 1.0, 0.0]))
+            .update((&[0.8, 0.6, 0.3, 0.1], &[1_usize, 0, 1, 0]))
             .expect("update should succeed");
         precision
-            .update((&[0.7], &[1.0]))
+            .update((&[0.7], &[1_usize]))
             .expect("update should succeed");
         assert_eq!(precision.compute().unwrap(), 2.0 / 3.0);
 
@@ -146,7 +146,7 @@ mod tests {
     fn binary_precision_validates_targets() {
         let mut precision = BinaryPrecision::default();
         let err = precision
-            .update((&[0.8], &[2.0]))
+            .update((&[0.8], &[2_usize]))
             .expect_err("invalid targets should fail");
         assert_eq!(
             err,
@@ -162,10 +162,10 @@ mod tests {
         let mut recall = BinaryRecall::default();
 
         recall
-            .update((&[0.8, 0.6, 0.3, 0.1], &[1.0, 0.0, 1.0, 0.0]))
+            .update((&[0.8, 0.6, 0.3, 0.1], &[1_usize, 0, 1, 0]))
             .expect("update should succeed");
         recall
-            .update((&[0.7], &[1.0]))
+            .update((&[0.7], &[1_usize]))
             .expect("update should succeed");
         assert_eq!(recall.compute().unwrap(), 2.0 / 3.0);
 
@@ -177,7 +177,7 @@ mod tests {
     fn binary_recall_validates_targets() {
         let mut recall = BinaryRecall::default();
         let err = recall
-            .update((&[0.8], &[2.0]))
+            .update((&[0.8], &[2_usize]))
             .expect_err("invalid targets should fail");
         assert_eq!(
             err,

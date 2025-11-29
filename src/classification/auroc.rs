@@ -21,7 +21,7 @@ enum BinaryAurocMode {
 /// use rust_metrics::{BinaryAuroc, Metric};
 ///
 /// let mut auroc = BinaryAuroc::new(0); // 0 => exact mode
-/// auroc.update((&[0.9, 0.2], &[1.0, 0.0])).unwrap();
+/// auroc.update((&[0.9, 0.2], &[1_usize, 0_usize])).unwrap();
 /// assert!(auroc.compute().unwrap() > 0.9);
 /// ```
 #[derive(Debug, Clone)]
@@ -53,10 +53,10 @@ impl BinaryAuroc {
     }
 }
 
-impl Metric<(&[f64], &[f64])> for BinaryAuroc {
+impl Metric<(&[f64], &[usize])> for BinaryAuroc {
     type Output = f64;
 
-    fn update(&mut self, (predictions, targets): (&[f64], &[f64])) -> Result<(), MetricError> {
+    fn update(&mut self, (predictions, targets): (&[f64], &[usize])) -> Result<(), MetricError> {
         if predictions.len() != targets.len() {
             return Err(MetricError::LengthMismatch {
                 predictions: predictions.len(),
@@ -69,7 +69,7 @@ impl Metric<(&[f64], &[f64])> for BinaryAuroc {
                 for (&prediction, &target) in predictions.iter().zip(targets.iter()) {
                     verify_range(prediction, 0.0, 1.0)?;
                     verify_binary_label(target)?;
-                    let target_bool = target == 1.0;
+                    let target_bool = target == 1;
                     samples.push((prediction, target_bool));
                 }
                 Ok(())
@@ -84,7 +84,7 @@ impl Metric<(&[f64], &[f64])> for BinaryAuroc {
                     verify_range(prediction, 0.0, 1.0)?;
                     verify_binary_label(target)?;
                     let bin_index = ((prediction * max_bin_idx).round()) as usize;
-                    if target == 1.0 {
+                    if target == 1 {
                         pos_hist[bin_index] += 1;
                     } else {
                         neg_hist[bin_index] += 1;
@@ -191,7 +191,10 @@ mod tests {
     #[test]
     fn binary_auroc_binned() {
         let mut auc = BinaryAuroc::new(100);
-        let _ = auc.update((&[0.9, 0.8, 0.7, 0.4, 0.2], &[1.0, 1.0, 0.0, 0.0, 1.0]));
+        let _ = auc.update((
+            &[0.9, 0.8, 0.7, 0.4, 0.2],
+            &[1_usize, 1, 0, 0, 1],
+        ));
         assert!((auc.compute().unwrap() - (2.0 / 3.0)).abs() < f64::EPSILON);
 
         auc.reset();
@@ -201,14 +204,20 @@ mod tests {
     #[test]
     fn binary_auroc_exact() {
         let mut auc = BinaryAuroc::new(0);
-        let _ = auc.update((&[0.9, 0.8, 0.7, 0.4, 0.2], &[1.0, 1.0, 0.0, 0.0, 1.0]));
-        let _ = auc.update((&[0.9, 0.8, 0.7, 0.4, 0.2], &[1.0, 1.0, 0.0, 0.0, 1.0]));
+        let _ = auc.update((
+            &[0.9, 0.8, 0.7, 0.4, 0.2],
+            &[1_usize, 1, 0, 0, 1],
+        ));
+        let _ = auc.update((
+            &[0.9, 0.8, 0.7, 0.4, 0.2],
+            &[1_usize, 1, 0, 0, 1],
+        ));
         assert!((auc.compute().unwrap() - (2.0 / 3.0)).abs() < f64::EPSILON);
 
         let scores = [0.9, 0.6, 0.1, 0.2];
-        let targets = [0, 1, 0, 0];
+        let targets = [0_usize, 1, 0, 0];
         let mut auroc = BinaryAuroc::new(0); // 0 => compute exact ROC AUC
-        auroc.update((&scores, &targets.map(|t| t as f64))).unwrap();
+        auroc.update((&scores, &targets)).unwrap();
         assert!(auroc.compute().unwrap() > 0.6);
     }
 }

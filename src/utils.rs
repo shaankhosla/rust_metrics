@@ -11,8 +11,8 @@ pub fn verify_range(input: f64, min: f64, max: f64) -> Result<(), MetricError> {
     }
 }
 
-pub fn verify_binary_label(input: f64) -> Result<(), MetricError> {
-    if input == 0.0 || input == 1.0 {
+pub fn verify_binary_label(input: usize) -> Result<(), MetricError> {
+    if input <= 1 {
         Ok(())
     } else {
         Err(MetricError::IncompatibleInput {
@@ -114,12 +114,12 @@ impl ConfusionMatrix {
         self.true_negative = 0;
         self.total = 0;
     }
-    pub fn update(&mut self, y_pred: f64, y_true: f64) -> Result<(), MetricError> {
+    pub fn update(&mut self, y_pred: f64, y_true: usize) -> Result<(), MetricError> {
         verify_range(y_pred, 0.0, 1.0)?;
         verify_binary_label(y_true)?;
 
         let prediction: bool = y_pred > self.threshold;
-        let actual: bool = y_true == 1.0;
+        let actual: bool = y_true == 1;
 
         match (prediction, actual) {
             (true, true) => self.true_positive += 1,

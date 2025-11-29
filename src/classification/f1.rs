@@ -8,7 +8,7 @@ use crate::utils::ConfusionMatrix;
 ///
 /// let mut f1 = BinaryF1Score::default();
 /// f1.update((&[0.0, 0.0, 1.0, 1.0, 0.0, 1.0],
-/// &[0.0, 1.0, 0.0, 1.0, 0.0, 1.0])).unwrap();
+/// &[0_usize, 1, 0, 1, 0, 1])).unwrap();
 /// assert!(f1.compute().unwrap() >= 0.0);
 /// ```
 #[derive(Debug, Clone)]
@@ -29,10 +29,10 @@ impl BinaryF1Score {
     }
 }
 
-impl Metric<(&[f64], &[f64])> for BinaryF1Score {
+impl Metric<(&[f64], &[usize])> for BinaryF1Score {
     type Output = f64;
 
-    fn update(&mut self, (predictions, targets): (&[f64], &[f64])) -> Result<(), MetricError> {
+    fn update(&mut self, (predictions, targets): (&[f64], &[usize])) -> Result<(), MetricError> {
         if predictions.len() != targets.len() {
             return Err(MetricError::LengthMismatch {
                 predictions: predictions.len(),
@@ -73,11 +73,11 @@ mod tests {
 
         f1.update((
             &[0.0, 0.0, 1.0, 1.0, 0.0, 1.0],
-            &[0.0, 1.0, 0.0, 1.0, 0.0, 1.0],
+            &[0_usize, 1, 0, 1, 0, 1],
         ))
         .expect("update should succeed");
         assert!((f1.compute().unwrap() - 2.0 / 3.0).abs() < f64::EPSILON);
-        f1.update((&[0.7], &[1.0])).expect("update should succeed");
+        f1.update((&[0.7], &[1_usize])).expect("update should succeed");
         assert_eq!(f1.compute().unwrap(), 0.75);
 
         f1.reset();

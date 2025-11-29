@@ -27,7 +27,7 @@ assert_eq!(accuracy.compute(), Some(0.75));
 
 let scores = [0.9, 0.6, 0.1, 0.2];
 let mut auroc = BinaryAuroc::new(0); // 0 => compute exact ROC AUC
-auroc.update((&scores, &targets.map(|t| t as f64))).unwrap();
+auroc.update((&scores, &targets)).unwrap();
 assert!(auroc.compute().unwrap() > 0.6);
 ```
 
@@ -63,4 +63,3 @@ assert!(auroc.compute().unwrap() > 0.6);
 | Feature    | Default | Description                                                  |
 | --------- | ------- | ------------------------------------------------------------ |
 | `text-bert` | no    | Enables BERT sentence embedding similarity via `fastembed`. |
-
