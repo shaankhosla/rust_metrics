@@ -5,6 +5,13 @@
 Every metric shares the same Torch-inspired test cases and examples so that the
 crate docs mirror the upstream behavior where the functionality matches.
 
+Some benefits of `rust-metrics`:
+
+- A standardized interface to increase reproducibility
+- Reduces Boilerplate
+- Rigorously tested
+- Automatic accumulation over batches
+
 
 ## Getting started
 
