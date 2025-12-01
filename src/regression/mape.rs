@@ -5,10 +5,12 @@ use crate::core::{Metric, MetricError};
 /// ```
 /// use rust_metrics::{MeanAbsolutePercentageError, Metric};
 ///
+/// let preds = [0.9, 15.0, 1_200_000.0];
+/// let target = [1.0, 10.0, 1_000_000.0];
+///
 /// let mut mape = MeanAbsolutePercentageError::default();
-///mape.update((&[0.9, 15.0, 1200000.0], &[1.0, 10.0, 1000000.0]))
-///    .unwrap();
-///assert!((mape.compute().unwrap() - 0.26666666666666666).abs() < f64::EPSILON);
+/// mape.update((&preds, &target)).unwrap();
+/// assert!((mape.compute().unwrap() - 0.26666666666666666).abs() < f64::EPSILON);
 /// ```
 #[derive(Debug, Clone, Default)]
 pub struct MeanAbsolutePercentageError {

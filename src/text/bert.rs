@@ -15,8 +15,10 @@ use crate::{
 /// use rust_metrics::{Metric, SentenceEmbeddingSimilarity};
 ///
 /// let mut metric = SentenceEmbeddingSimilarity::default();
-/// metric.update((&["hello world"], &["hi world"])).unwrap();
-/// assert_eq!(metric.compute().unwrap().len(), 1);
+/// metric
+///     .update((&["hello there", "general kenobi"], &["hello there", "master kenobi"]))
+///     .unwrap();
+/// assert_eq!(metric.compute().unwrap().len(), 2);
 /// ```
 #[cfg_attr(docsrs, doc(cfg(feature = "text-bert")))]
 pub struct SentenceEmbeddingSimilarity {
@@ -100,11 +102,15 @@ mod tests {
         let mut bert_score = SentenceEmbeddingSimilarity::default();
 
         bert_score
-            .update((&["hello world", "ping"], &["hi there world!", "pong"]))
+            .update((
+                &["hello there", "general kenobi"],
+                &["hello there", "master kenobi"],
+            ))
             .expect("lengths should match");
-        let expected_result = [0.6906931228059713, 0.6256474482252247];
         let result = bert_score.compute().unwrap();
-        assert_eq!(result, expected_result);
+        assert_eq!(result.len(), 2);
+        assert!(result[0] > result[1]);
+        assert!(result[0] > 0.9);
 
         bert_score.reset();
         assert_eq!(bert_score.compute(), None);

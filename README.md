@@ -2,6 +2,9 @@
 
 `rust_metrics` is an ML evaluation toolkit that brings [Torchmetrics](https://github.com/Lightning-AI/torchmetrics)-style metrics to Rust. Each metric implements the same incremental
 `Metric` trait, so you can feed batched predictions over time and ask for the final score when ready.
+Every metric shares the same Torch-inspired test cases and examples so that the
+crate docs mirror the upstream behavior where the functionality matches.
+
 
 ## Getting started
 
@@ -13,33 +16,71 @@ cargo add rust_metrics
 cargo add rust_metrics --features text-bert
 ```
 
-Evaluate batched predictions:
+## TorchMetrics-aligned examples
+
+All snippets below (and method examples) reuse the exact inputs from the public TorchMetrics docs so you can cross-check the expected values.
+
+### Classification
 
 ```rust
 use rust_metrics::{BinaryAccuracy, BinaryAuroc, Metric};
 
-let predictions = [0.0, 0.7, 1.0, 0.02];
-let targets = [0_usize, 1, 0, 0];
+let target = [0_usize, 1, 0, 1, 0, 1];
+let preds = [0.11, 0.22, 0.84, 0.73, 0.33, 0.92];
 
-let mut accuracy = BinaryAccuracy::default();
-accuracy.update((&predictions, &targets)).unwrap();
-assert_eq!(accuracy.compute(), Some(0.75));
+let mut acc = BinaryAccuracy::default();
+acc.update((&preds[..], &target[..])).unwrap();
+assert!((acc.compute().unwrap() - 2.0 / 3.0).abs() < f64::EPSILON);
 
-let scores = [0.9, 0.6, 0.1, 0.2];
-let mut auroc = BinaryAuroc::new(0); // 0 => compute exact ROC AUC
-auroc.update((&scores, &targets)).unwrap();
-assert!(auroc.compute().unwrap() > 0.6);
+let mut auroc = BinaryAuroc::new(0); // exact mode, identical data as TorchMetrics docs
+let auroc_scores = [0.0, 0.5, 0.7, 0.8];
+let auroc_target = [0_usize, 1, 1, 0];
+auroc.update((&auroc_scores, &auroc_target)).unwrap();
+assert!((auroc.compute().unwrap() - 0.5).abs() < f64::EPSILON);
 ```
 
-## Available metrics
+### Regression
+
+```rust
+use rust_metrics::{MeanSquaredError, MeanAbsoluteError, Metric};
+
+let mut mse = MeanSquaredError::default();
+mse.update((&[3.0, 5.0, 2.5, 7.0], &[2.5, 5.0, 4.0, 8.0])).unwrap();
+assert!((mse.compute().unwrap() - 0.875).abs() < f64::EPSILON);
+
+let mut mae = MeanAbsoluteError::default();
+mae.update((&[2.5, 0.0, 2.0, 8.0], &[3.0, -0.5, 2.0, 7.0])).unwrap();
+assert!((mae.compute().unwrap() - 0.5).abs() < f64::EPSILON);
+```
+
+### Text
+
+```rust
+use rust_metrics::{Bleu, EditDistance, Metric};
+
+let preds = ["the cat is on the mat"];
+let targets = ["there is a cat on the mat"];
+
+let mut bleu = Bleu::default();
+bleu.update((&preds, &targets)).unwrap();
+assert!(bleu.compute().unwrap() > 0.5); 
+
+let mut edit = EditDistance::default();
+edit.update((&["rain"], &["shine"])).unwrap();
+assert_eq!(edit.compute(), Some(3.0));
+```
+
+For `SentenceEmbeddingSimilarity` enable the `text-bert` feature; it mirrors the `BERTScore` example sentences and
+reports cosine similarities for each pair instead of precision/recall triples.
+
+## Implemented metrics
 
 ### Classification
 
-- `BinaryAccuracy`, `MulticlassAccuracy`, `MultilabelAccuracy`
-- `BinaryPrecision`, `BinaryRecall`
-- `BinaryHinge`
-- `BinaryAuroc` (exact or binned ROC AUC)
+- `BinaryAccuracy`, `MulticlassAccuracy`
+- `BinaryPrecision`, `BinaryRecall`, `MulticlassPrecision` 
 - `BinaryF1Score`
+- `BinaryConfusionMatrix`, `BinaryAuroc`, `BinaryHinge`
 
 ### Regression
 

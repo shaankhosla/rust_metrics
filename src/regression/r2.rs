@@ -3,11 +3,13 @@ use crate::core::{Metric, MetricError};
 /// Online R2Score
 ///
 /// ```
-/// use rust_metrics::{R2Score, Metric};
+/// use rust_metrics::{Metric, R2Score};
+///
+/// let preds = [2.5, 0.0, 2.0, 8.0];
+/// let target = [3.0, -0.5, 2.0, 7.0];
 ///
 /// let mut r2 = R2Score::default();
-/// r2.update((&[2.5, 0.0, 2.0, 8.0], &[3.0, -0.5, 2.0, 7.0]))
-///     .unwrap();
+/// r2.update((&preds, &target)).unwrap();
 /// assert!((r2.compute().unwrap() - 0.9486081370449679).abs() < f64::EPSILON);
 /// ```
 #[derive(Debug, Clone, Default)]

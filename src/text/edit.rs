@@ -1,13 +1,13 @@
 use crate::core::{Metric, MetricError};
-use crate::utils::{MetricAggregator, Reduction, levenshtein_distance};
+use crate::utils::{levenshtein_distance, MetricAggregator, Reduction};
 
 /// Streaming Levenshtein distance.
 ///
 /// ```
 /// use rust_metrics::{EditDistance, Metric};
 ///
-/// let preds = ["kitten"];
-/// let targets = ["sitting"];
+/// let preds = ["rain"];
+/// let targets = ["shine"];
 /// let mut edit = EditDistance::default();
 /// edit.update((&preds, &targets)).unwrap();
 /// assert_eq!(edit.compute(), Some(3.0));
@@ -66,18 +66,17 @@ mod tests {
     fn edit_over_batches() {
         let mut edit_distance = EditDistance::default();
 
-        let preds = vec!["the cat is on the mat"];
-        let targets = vec!["the cat is on the mat"];
+        let preds = vec!["rain"];
+        let targets = vec!["shine"];
 
         edit_distance.update((&preds, &targets)).unwrap();
         let score = edit_distance.compute().unwrap();
-        assert_eq!(score, 0.0);
+        assert_eq!(score, 3.0);
 
         edit_distance.reset();
         let score = edit_distance.compute();
         assert_eq!(score, None);
 
-        let mut edit_distance = EditDistance::default();
         let preds = vec!["the cat is on the bath"];
         let targets = vec!["the cat is on the mat"];
         edit_distance.update((&preds, &targets)).unwrap();

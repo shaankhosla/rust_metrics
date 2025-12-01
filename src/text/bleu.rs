@@ -4,14 +4,16 @@ use std::collections::HashMap;
 
 /// Cumulative BLEU score with optional smoothing and arbitrary n-gram depth.
 ///
+///
 /// ```
 /// use rust_metrics::{Bleu, Metric};
 ///
 /// let preds = ["the cat is on the mat"];
-/// let targets = ["the cat is on the mat"];
+/// let targets = ["a cat is on the mat"];
+///
 /// let mut bleu = Bleu::default();
 /// bleu.update((&preds, &targets)).unwrap();
-/// assert_eq!(bleu.compute(), Some(1.0));
+/// assert!((bleu.compute().unwrap() - 0.7598356856515925).abs() < 1e-12);
 /// ```
 #[derive(Debug, Clone)]
 pub struct Bleu {
@@ -160,11 +162,11 @@ mod tests {
         let mut bleu = Bleu::default();
 
         let preds = vec!["the cat is on the mat"];
-        let targets = vec!["the cat is on the mat"];
+        let targets = vec!["a cat is on the mat"];
 
         bleu.update((&preds, &targets)).unwrap();
         let score = bleu.compute().unwrap();
-        assert!((score - 1.0).abs() < f64::EPSILON);
+        assert!((score - 0.7598356856515925).abs() < 1e-12);
 
         bleu.reset();
         assert_eq!(bleu.compute(), None);

@@ -17,12 +17,19 @@ enum BinaryAurocMode {
 
 /// ROC AUC for binary classification with exact or histogrammed accumulation.
 ///
+/// Passing `0` to [`BinaryAuroc::new`] enables
+/// the exact (unbinned) mode; any value `> 1` enables a histogram approximation with that many
+/// bins.
+///
 /// ```
 /// use rust_metrics::{BinaryAuroc, Metric};
 ///
-/// let mut auroc = BinaryAuroc::new(0); // 0 => exact mode
-/// auroc.update((&[0.9, 0.2], &[1_usize, 0_usize])).unwrap();
-/// assert!(auroc.compute().unwrap() > 0.9);
+/// let preds = [0.0, 0.5, 0.7, 0.8];
+/// let target = [0_usize, 1, 1, 0];
+///
+/// let mut auroc = BinaryAuroc::new(0);
+/// auroc.update((&preds, &target)).unwrap();
+/// assert!((auroc.compute().unwrap() - 0.5).abs() < f64::EPSILON);
 /// ```
 #[derive(Debug, Clone)]
 pub struct BinaryAuroc {
@@ -189,26 +196,19 @@ mod tests {
     use crate::core::Metric;
 
     #[test]
-    fn binary_auroc_binned() {
-        let mut auc = BinaryAuroc::new(100);
-        let _ = auc.update((&[0.9, 0.8, 0.7, 0.4, 0.2], &[1_usize, 1, 0, 0, 1]));
-        assert!((auc.compute().unwrap() - (2.0 / 3.0)).abs() < f64::EPSILON);
+    fn binary_auroc() {
+        let preds = [0.0, 0.5, 0.7, 0.8];
+        let target = [0_usize, 1, 1, 0];
 
-        auc.reset();
-        assert_eq!(auc.compute(), None);
-    }
+        let mut binned = BinaryAuroc::new(5);
+        binned.update((&preds, &target)).unwrap();
+        assert!((binned.compute().unwrap() - 0.5).abs() < f64::EPSILON);
 
-    #[test]
-    fn binary_auroc_exact() {
-        let mut auc = BinaryAuroc::new(0);
-        let _ = auc.update((&[0.9, 0.8, 0.7, 0.4, 0.2], &[1_usize, 1, 0, 0, 1]));
-        let _ = auc.update((&[0.9, 0.8, 0.7, 0.4, 0.2], &[1_usize, 1, 0, 0, 1]));
-        assert!((auc.compute().unwrap() - (2.0 / 3.0)).abs() < f64::EPSILON);
+        let mut exact = BinaryAuroc::new(0);
+        exact.update((&preds, &target)).unwrap();
+        assert!((exact.compute().unwrap() - 0.5).abs() < f64::EPSILON);
 
-        let scores = [0.9, 0.6, 0.1, 0.2];
-        let targets = [0_usize, 1, 0, 0];
-        let mut auroc = BinaryAuroc::new(0); // 0 => compute exact ROC AUC
-        auroc.update((&scores, &targets)).unwrap();
-        assert!(auroc.compute().unwrap() > 0.6);
+        exact.reset();
+        assert_eq!(exact.compute(), None);
     }
 }

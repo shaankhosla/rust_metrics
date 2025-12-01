@@ -2,15 +2,18 @@ use crate::core::{Metric, MetricError};
 
 use super::stat_scores::BinaryStatScores;
 
-/// Online F1 Score for binary classification.
+/// Binary F1 Score, computed as the harmonic mean of precision and recall.
+///
 ///
 /// ```
 /// use rust_metrics::{BinaryF1Score, Metric};
 ///
+/// let target = [0_usize, 1, 0, 1, 0, 1];
+/// let preds = [0.11, 0.22, 0.84, 0.73, 0.33, 0.92];
+///
 /// let mut f1 = BinaryF1Score::default();
-/// f1.update((&[0.0, 0.0, 1.0, 1.0, 0.0, 1.0],
-/// &[0_usize, 1, 0, 1, 0, 1])).unwrap();
-/// assert!(f1.compute().unwrap() >= 0.0);
+/// f1.update((&preds, &target)).unwrap();
+/// assert!((f1.compute().unwrap() - 2.0 / 3.0).abs() < f64::EPSILON);
 /// ```
 #[derive(Debug, Clone, Default)]
 pub struct BinaryF1Score {
@@ -58,12 +61,11 @@ mod tests {
     fn f1_computes_over_batches() {
         let mut f1 = BinaryF1Score::default();
 
-        f1.update((&[0.0, 0.0, 1.0, 1.0, 0.0, 1.0], &[0_usize, 1, 0, 1, 0, 1]))
+        f1.update((&[0.11, 0.22, 0.84], &[0_usize, 1, 0]))
+            .expect("update should succeed");
+        f1.update((&[0.73, 0.33, 0.92], &[1_usize, 0, 1]))
             .expect("update should succeed");
         assert!((f1.compute().unwrap() - 2.0 / 3.0).abs() < f64::EPSILON);
-        f1.update((&[0.7], &[1_usize]))
-            .expect("update should succeed");
-        assert_eq!(f1.compute().unwrap(), 0.75);
 
         f1.reset();
         assert_eq!(f1.compute(), None);

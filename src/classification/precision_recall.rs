@@ -8,9 +8,12 @@ use super::stat_scores::{BinaryStatScores, MulticlassStatScores};
 /// ```
 /// use rust_metrics::{BinaryPrecision, Metric};
 ///
-/// let mut precision = BinaryPrecision::new(0.5);
-/// precision.update((&[0.9, 0.4], &[1_usize, 0])).unwrap();
-/// assert_eq!(precision.compute(), Some(1.0));
+/// let target = [0_usize, 1, 0, 1, 0, 1];
+/// let preds = [0.11, 0.22, 0.84, 0.73, 0.33, 0.92];
+///
+/// let mut precision = BinaryPrecision::default();
+/// precision.update((&preds, &target)).unwrap();
+/// assert!((precision.compute().unwrap() - 2.0 / 3.0).abs() < f64::EPSILON);
 /// ```
 #[derive(Debug, Clone, Default)]
 pub struct BinaryPrecision {
@@ -54,6 +57,26 @@ pub struct MulticlassPrecision {
     average_method: AverageMethod,
 }
 
+/// Macro/micro precision for multi-class classification.
+///
+///
+/// ```
+/// use rust_metrics::{Metric};
+/// use rust_metrics::classification::precision_recall::MulticlassPrecision;
+/// use rust_metrics::utils::AverageMethod;
+///
+/// let targets = [2, 1, 0, 0];
+/// let preds: [&[f64]; 4] = [
+///     &[0.16, 0.26, 0.58],
+///     &[0.22, 0.61, 0.17],
+///     &[0.71, 0.09, 0.20],
+///     &[0.05, 0.82, 0.13],
+/// ];
+///
+/// let mut metric = MulticlassPrecision::new(3, AverageMethod::Macro);
+/// metric.update((&preds, &targets)).unwrap();
+/// assert!((metric.compute().unwrap() - 0.8333333333333334).abs() < f64::EPSILON);
+/// ```
 impl MulticlassPrecision {
     pub fn new(num_classes: usize, average_method: AverageMethod) -> Self {
         let stat_scores = MulticlassStatScores::new(num_classes);
@@ -136,14 +159,17 @@ impl Metric<(&[&[f64]], &[usize])> for MulticlassPrecision {
     }
 }
 
-/// Thresholded recall for binary classification probabilities.
+/// Binary recall (`TP / (TP + FN)`) over thresholded probabilities.
 ///
 /// ```
 /// use rust_metrics::{BinaryRecall, Metric};
 ///
-/// let mut recall = BinaryRecall::new(0.5);
-/// recall.update((&[0.9, 0.4], &[1_usize, 1])).unwrap();
-/// assert_eq!(recall.compute(), Some(0.5));
+/// let target = [0_usize, 1, 0, 1, 0, 1];
+/// let preds = [0.11, 0.22, 0.84, 0.73, 0.33, 0.92];
+///
+/// let mut recall = BinaryRecall::default();
+/// recall.update((&preds, &target)).unwrap();
+/// assert!((recall.compute().unwrap() - 2.0 / 3.0).abs() < f64::EPSILON);
 /// ```
 #[derive(Debug, Clone, Default)]
 pub struct BinaryRecall {
@@ -191,12 +217,12 @@ mod tests {
         let mut precision = BinaryPrecision::default();
 
         precision
-            .update((&[0.8, 0.6, 0.3, 0.1], &[1_usize, 0, 1, 0]))
+            .update((&[0.11, 0.22, 0.84], &[0_usize, 1, 0]))
             .expect("update should succeed");
         precision
-            .update((&[0.7], &[1_usize]))
+            .update((&[0.73, 0.33, 0.92], &[1_usize, 0, 1]))
             .expect("update should succeed");
-        assert_eq!(precision.compute().unwrap(), 2.0 / 3.0);
+        assert!((precision.compute().unwrap() - 2.0 / 3.0).abs() < f64::EPSILON);
 
         precision.reset();
         assert_eq!(precision.compute(), None);
@@ -236,12 +262,12 @@ mod tests {
         let mut recall = BinaryRecall::default();
 
         recall
-            .update((&[0.8, 0.6, 0.3, 0.1], &[1_usize, 0, 1, 0]))
+            .update((&[0.11, 0.22, 0.84], &[0_usize, 1, 0]))
             .expect("update should succeed");
         recall
-            .update((&[0.7], &[1_usize]))
+            .update((&[0.73, 0.33, 0.92], &[1_usize, 0, 1]))
             .expect("update should succeed");
-        assert_eq!(recall.compute().unwrap(), 2.0 / 3.0);
+        assert!((recall.compute().unwrap() - 2.0 / 3.0).abs() < f64::EPSILON);
 
         recall.reset();
         assert_eq!(recall.compute(), None);

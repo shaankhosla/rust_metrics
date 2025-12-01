@@ -2,6 +2,21 @@ use crate::core::{Metric, MetricError};
 
 use super::stat_scores::BinaryStatScores;
 
+/// 2×2 confusion matrix for binary classification.
+///
+/// Returns a matrix in the
+/// `[[TP, FP], [FN, TN]]` layout.
+///
+/// ```
+/// use rust_metrics::{BinaryConfusionMatrix, Metric};
+///
+/// let target = [1_usize, 1, 0, 0];
+/// let preds = [0.35, 0.85, 0.48, 0.01];
+///
+/// let mut bcm = BinaryConfusionMatrix::default();
+/// bcm.update((&preds, &target)).unwrap();
+/// assert_eq!(bcm.compute().unwrap(), [[2, 0], [1, 1]]);
+/// ```
 #[derive(Debug, Clone, Default)]
 pub struct BinaryConfusionMatrix {
     pub stat_scores: BinaryStatScores,

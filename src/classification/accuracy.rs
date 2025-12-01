@@ -3,6 +3,18 @@ use crate::utils::AverageMethod;
 
 use super::stat_scores::{BinaryStatScores, MulticlassStatScores};
 
+/// Binary accuracy over thresholded probabilities.
+///
+/// ```
+/// use rust_metrics::{BinaryAccuracy, Metric};
+///
+/// let target = [0_usize, 1, 0, 1, 0, 1];
+/// let preds = [0.11, 0.22, 0.84, 0.73, 0.33, 0.92];
+///
+/// let mut metric = BinaryAccuracy::default();
+/// metric.update((&preds, &target)).unwrap();
+/// assert!((metric.compute().unwrap() - 2.0 / 3.0).abs() < f64::EPSILON);
+/// ```
 #[derive(Debug, Clone, Default)]
 pub struct BinaryAccuracy {
     stat_scores: BinaryStatScores,
@@ -37,6 +49,25 @@ impl Metric<(&[f64], &[usize])> for BinaryAccuracy {
     }
 }
 
+/// Macro/micro accuracy for multi-class classification.
+/// # Example
+///
+/// ```
+/// use rust_metrics::{Metric, MulticlassAccuracy};
+/// use rust_metrics::utils::AverageMethod;
+///
+/// let targets = [2, 1, 0, 0];
+/// let preds: [&[f64]; 4] = [
+///     &[0.16, 0.26, 0.58],
+///     &[0.22, 0.61, 0.17],
+///     &[0.71, 0.09, 0.20],
+///     &[0.05, 0.82, 0.13],
+/// ];
+///
+/// let mut metric = MulticlassAccuracy::new(3, AverageMethod::Macro);
+/// metric.update((&preds, &targets)).unwrap();
+/// assert!((metric.compute().unwrap() - 0.8333333333333334).abs() < f64::EPSILON);
+/// ```
 #[derive(Debug, Clone)]
 pub struct MulticlassAccuracy {
     stat_scores: MulticlassStatScores,

@@ -5,9 +5,12 @@ use crate::core::{Metric, MetricError};
 /// ```
 /// use rust_metrics::{MeanSquaredError, Metric};
 ///
+/// let preds = [3.0, 5.0, 2.5, 7.0];
+/// let target = [2.5, 5.0, 4.0, 8.0];
+///
 /// let mut mse = MeanSquaredError::default();
-/// mse.update((&[3.0, 5.0, 2.5, 7.0], &[2.5, 5.0, 4.0, 8.0])).unwrap();
-/// assert_eq!(mse.compute().unwrap(), 0.8750);
+/// mse.update((&preds, &target)).unwrap();
+/// assert!((mse.compute().unwrap() - 0.875).abs() < f64::EPSILON);
 /// ```
 #[derive(Debug, Clone, Default)]
 pub struct MeanSquaredError {

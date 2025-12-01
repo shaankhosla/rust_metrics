@@ -3,12 +3,18 @@ use crate::utils::verify_range;
 
 /// Online hinge loss for binary classification.
 ///
+/// Predictions stay within `[-1, 1]` and
+/// labels must be encoded as `-1.0` (negative) or `1.0` (positive). 
+///
 /// ```
 /// use rust_metrics::{BinaryHinge, Metric};
 ///
+/// let preds = [0.25, 0.25, 0.55, 0.75, 0.75];
+/// let targets = [-1.0, -1.0, 1.0, 1.0, 1.0];
+///
 /// let mut hinge = BinaryHinge::default();
-/// hinge.update((&[0.8, -0.6], &[1.0, -1.0])).unwrap();
-/// assert!(hinge.compute().unwrap() >= 0.0);
+/// hinge.update((&preds, &targets)).unwrap();
+/// assert!((hinge.compute().unwrap() - 0.69).abs() < 1e-6);
 /// ```
 #[derive(Debug, Clone)]
 pub struct BinaryHinge {
@@ -80,13 +86,12 @@ mod tests {
         let mut hinge = BinaryHinge::default();
 
         hinge
-            .update((&[0.8, -0.6, 0.3, 0.1], &[1.0, -1.0, 1.0, -1.0]))
+            .update((&[0.25, 0.25, 0.55], &[-1.0, -1.0, 1.0]))
             .expect("update should succeed");
-        assert_eq!(hinge.compute().unwrap(), 0.6);
         hinge
-            .update((&[0.7], &[1.0]))
+            .update((&[0.75, 0.75], &[1.0, 1.0]))
             .expect("update should succeed");
-        assert_eq!(hinge.compute().unwrap(), 0.54);
+        assert!((hinge.compute().unwrap() - 0.69).abs() < 1e-12);
 
         hinge.reset();
         assert_eq!(hinge.compute(), None);

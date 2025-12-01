@@ -5,9 +5,12 @@ use crate::core::{Metric, MetricError};
 /// ```
 /// use rust_metrics::{MeanAbsoluteError, Metric};
 ///
+/// let preds = [2.5, 0.0, 2.0, 8.0];
+/// let target = [3.0, -0.5, 2.0, 7.0];
+///
 /// let mut mae = MeanAbsoluteError::default();
-/// mae.update((&[3.0, 5.0, 2.5, 7.0], &[2.5, 5.0, 4.0, 8.0])).unwrap();
-/// assert_eq!(mae.compute().unwrap(), 0.75);
+/// mae.update((&preds, &target)).unwrap();
+/// assert!((mae.compute().unwrap() - 0.5).abs() < f64::EPSILON);
 /// ```
 #[derive(Debug, Clone, Default)]
 pub struct MeanAbsoluteError {
@@ -63,8 +66,8 @@ mod tests {
     #[test]
     fn mae_computes_over_batches() {
         let mut mae = MeanAbsoluteError::default();
-        mae.update((&[3.0, 5.0, 2.5, 7.0], &[2.5, 5.0, 4.0, 8.0]))
+        mae.update((&[2.5, 0.0, 2.0, 8.0], &[3.0, -0.5, 2.0, 7.0]))
             .unwrap();
-        assert_eq!(mae.compute().unwrap(), 0.75);
+        assert!((mae.compute().unwrap() - 0.5).abs() < f64::EPSILON);
     }
 }
