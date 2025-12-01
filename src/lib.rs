@@ -8,7 +8,8 @@ pub mod utils;
 
 pub use classification::{
     BinaryAccuracy, BinaryAuroc, BinaryConfusionMatrix, BinaryF1Score, BinaryHingeLoss,
-    BinaryPrecision, BinaryRecall, MulticlassAccuracy, MulticlassF1Score, MulticlassPrecision,
+    BinaryPrecision, BinaryRecall, MulticlassAccuracy, MulticlassF1Score, MulticlassHingeLoss,
+    MulticlassPrecision,
 };
 pub use core::{Metric, MetricError};
 pub use regression::{MeanAbsoluteError, MeanAbsolutePercentageError, MeanSquaredError, R2Score};

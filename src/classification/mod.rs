@@ -15,5 +15,5 @@ pub use accuracy::{BinaryAccuracy, MulticlassAccuracy};
 pub use auroc::BinaryAuroc;
 pub use confusion_matrix::BinaryConfusionMatrix;
 pub use f1::{BinaryF1Score, MulticlassF1Score};
-pub use hinge::BinaryHingeLoss;
+pub use hinge::{BinaryHingeLoss, MulticlassHingeLoss};
 pub use precision_recall::{BinaryPrecision, BinaryRecall, MulticlassPrecision};

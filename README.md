@@ -80,7 +80,9 @@ reports cosine similarities for each pair instead of precision/recall triples.
 - `BinaryAccuracy`, `MulticlassAccuracy`
 - `BinaryPrecision`, `BinaryRecall`, `MulticlassPrecision` 
 - `BinaryF1Score`, `MulticlassF1Score`
-- `BinaryConfusionMatrix`, `BinaryAuroc`, `BinaryHingeLoss`
+- `BinaryHingeLoss`, `MulticlassHingeLoss`
+- `BinaryConfusionMatrix`
+- `BinaryAuroc`
 
 ### Regression
 
