@@ -206,7 +206,6 @@ mod tests {
 
         let mut binned = BinaryAuroc::new(7);
         binned.update((&preds, &target)).unwrap();
-        dbg!(binned.compute().unwrap());
         assert!((binned.compute().unwrap() - 0.5).abs() < f64::EPSILON);
 
         exact.reset();
