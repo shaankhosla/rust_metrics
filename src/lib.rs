@@ -7,13 +7,14 @@ pub mod text;
 pub mod utils;
 
 pub use classification::{
-    BinaryAccuracy, BinaryAuroc, BinaryConfusionMatrix, BinaryF1Score, BinaryHinge,
+    BinaryAccuracy, BinaryAuroc, BinaryConfusionMatrix, BinaryF1Score, BinaryHingeLoss,
     BinaryPrecision, BinaryRecall, MulticlassAccuracy, MulticlassF1Score, MulticlassPrecision,
 };
 pub use core::{Metric, MetricError};
 pub use regression::{MeanAbsoluteError, MeanAbsolutePercentageError, MeanSquaredError, R2Score};
 
 pub use text::{Bleu, EditDistance};
+pub use utils::Reduction;
 
 #[cfg_attr(docsrs, doc(cfg(feature = "text-bert")))]
 #[cfg(feature = "text-bert")]

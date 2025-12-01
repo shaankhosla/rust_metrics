@@ -1,35 +1,33 @@
 use crate::core::{Metric, MetricError};
-use crate::utils::verify_range;
+use crate::utils::{verify_binary_label, verify_range};
 
 /// Online hinge loss for binary classification.
 ///
-/// Predictions stay within `[-1, 1]` and
-/// labels must be encoded as `-1.0` (negative) or `1.0` (positive).
 ///
 /// ```
-/// use rust_metrics::{BinaryHinge, Metric};
+/// use rust_metrics::{BinaryHingeLoss, Metric};
 ///
 /// let preds = [0.25, 0.25, 0.55, 0.75, 0.75];
-/// let targets = [-1.0, -1.0, 1.0, 1.0, 1.0];
+/// let target = [0, 0, 1, 1, 1];
 ///
-/// let mut hinge = BinaryHinge::default();
-/// hinge.update((&preds, &targets)).unwrap();
+/// let mut hinge = BinaryHingeLoss::default();
+/// hinge.update((&preds, &target)).unwrap();
 /// assert!((hinge.compute().unwrap() - 0.69).abs() < 1e-6);
 /// ```
 #[derive(Debug, Clone)]
-pub struct BinaryHinge {
+pub struct BinaryHingeLoss {
     squared: bool,
     measures: f64,
     total: usize,
 }
 
-impl Default for BinaryHinge {
+impl Default for BinaryHingeLoss {
     fn default() -> Self {
         Self::new(false)
     }
 }
 
-impl BinaryHinge {
+impl BinaryHingeLoss {
     pub fn new(squared: bool) -> Self {
         Self {
             squared,
@@ -39,10 +37,10 @@ impl BinaryHinge {
     }
 }
 
-impl Metric<(&[f64], &[f64])> for BinaryHinge {
+impl Metric<(&[f64], &[usize])> for BinaryHingeLoss {
     type Output = f64;
 
-    fn update(&mut self, (predictions, targets): (&[f64], &[f64])) -> Result<(), MetricError> {
+    fn update(&mut self, (predictions, targets): (&[f64], &[usize])) -> Result<(), MetricError> {
         if predictions.len() != targets.len() {
             return Err(MetricError::LengthMismatch {
                 predictions: predictions.len(),
@@ -51,9 +49,11 @@ impl Metric<(&[f64], &[f64])> for BinaryHinge {
         }
         self.total += predictions.len();
         for (&prediction, &target) in predictions.iter().zip(targets.iter()) {
-            verify_range(prediction, -1.0, 1.0)?;
-            verify_range(target, -1.0, 1.0)?;
-            let mut measure = (1.0 - prediction * target).max(0.0);
+            verify_range(prediction, 0.0, 1.0)?;
+            verify_binary_label(target)?;
+
+            let y = if target == 1 { 1.0 } else { -1.0 };
+            let mut measure = (1.0 - prediction * y).max(0.0);
             if self.squared {
                 measure *= measure;
             }
@@ -78,22 +78,27 @@ impl Metric<(&[f64], &[f64])> for BinaryHinge {
 
 #[cfg(test)]
 mod tests {
-    use super::BinaryHinge;
+    use super::BinaryHingeLoss;
     use crate::core::Metric;
 
     #[test]
     fn binary_hinge_computes_over_batches() {
-        let mut hinge = BinaryHinge::default();
+        let mut hinge = BinaryHingeLoss::default();
 
-        hinge
-            .update((&[0.25, 0.25, 0.55], &[-1.0, -1.0, 1.0]))
-            .expect("update should succeed");
-        hinge
-            .update((&[0.75, 0.75], &[1.0, 1.0]))
-            .expect("update should succeed");
+        let preds = &[0.25, 0.25, 0.55, 0.75, 0.75];
+        let target = &[0, 0, 1, 1, 1];
+
+        hinge.update((preds, target)).unwrap();
+        dbg!(hinge.compute().unwrap());
         assert!((hinge.compute().unwrap() - 0.69).abs() < 1e-12);
 
         hinge.reset();
         assert_eq!(hinge.compute(), None);
+
+        let mut hinge = BinaryHingeLoss::new(true);
+
+        hinge.update((preds, target)).unwrap();
+        dbg!(hinge.compute().unwrap());
+        assert!((hinge.compute().unwrap() - 0.6905).abs() < 1e-12);
     }
 }
