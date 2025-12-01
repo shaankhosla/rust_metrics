@@ -32,7 +32,7 @@ let mut acc = BinaryAccuracy::default();
 acc.update((&preds[..], &target[..])).unwrap();
 assert!((acc.compute().unwrap() - 2.0 / 3.0).abs() < f64::EPSILON);
 
-let mut auroc = BinaryAuroc::new(0); // exact mode, identical data as TorchMetrics docs
+let mut auroc = BinaryAuroc::new(0); 
 let auroc_scores = [0.0, 0.5, 0.7, 0.8];
 let auroc_target = [0_usize, 1, 1, 0];
 auroc.update((&auroc_scores, &auroc_target)).unwrap();
@@ -59,7 +59,7 @@ assert!((mae.compute().unwrap() - 0.5).abs() < f64::EPSILON);
 use rust_metrics::{Bleu, EditDistance, Metric};
 
 let preds = ["the cat is on the mat"];
-let targets = ["there is a cat on the mat"];
+let targets = ["a cat is on the mat"];
 
 let mut bleu = Bleu::default();
 bleu.update((&preds, &targets)).unwrap();

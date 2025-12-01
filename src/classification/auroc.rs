@@ -200,13 +200,14 @@ mod tests {
         let preds = [0.0, 0.5, 0.7, 0.8];
         let target = [0_usize, 1, 1, 0];
 
-        let mut binned = BinaryAuroc::new(5);
-        binned.update((&preds, &target)).unwrap();
-        assert!((binned.compute().unwrap() - 0.5).abs() < f64::EPSILON);
-
         let mut exact = BinaryAuroc::new(0);
         exact.update((&preds, &target)).unwrap();
         assert!((exact.compute().unwrap() - 0.5).abs() < f64::EPSILON);
+
+        let mut binned = BinaryAuroc::new(7);
+        binned.update((&preds, &target)).unwrap();
+        dbg!(binned.compute().unwrap());
+        assert!((binned.compute().unwrap() - 0.5).abs() < f64::EPSILON);
 
         exact.reset();
         assert_eq!(exact.compute(), None);

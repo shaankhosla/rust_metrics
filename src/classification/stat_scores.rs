@@ -42,7 +42,7 @@ impl BinaryStatScores {
             verify_range(prediction, 0.0, 1.0)?;
             verify_binary_label(target)?;
 
-            let prediction: bool = prediction > self.threshold;
+            let prediction: bool = prediction >= self.threshold;
             let actual: bool = target == 1;
 
             match (prediction, actual) {

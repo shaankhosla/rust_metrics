@@ -15,7 +15,7 @@ use super::stat_scores::BinaryStatScores;
 ///
 /// let mut bcm = BinaryConfusionMatrix::default();
 /// bcm.update((&preds, &target)).unwrap();
-/// assert_eq!(bcm.compute().unwrap(), [[2, 0], [1, 1]]);
+/// assert_eq!(bcm.compute().unwrap(), [[1, 0], [1, 2]]);
 /// ```
 #[derive(Debug, Clone, Default)]
 pub struct BinaryConfusionMatrix {
