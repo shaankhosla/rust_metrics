@@ -18,10 +18,10 @@ Evaluate batched predictions:
 ```rust
 use rust_metrics::{BinaryAccuracy, BinaryAuroc, Metric};
 
-let predictions = [0, 1, 1, 0];
-let targets = [0, 1, 0, 0];
+let predictions = [0.0, 0.7, 1.0, 0.02];
+let targets = [0_usize, 1, 0, 0];
 
-let mut accuracy = BinaryAccuracy::new();
+let mut accuracy = BinaryAccuracy::default();
 accuracy.update((&predictions, &targets)).unwrap();
 assert_eq!(accuracy.compute(), Some(0.75));
 

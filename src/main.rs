@@ -4,9 +4,9 @@ use rust_metrics::{BinaryAccuracy, BinaryAuroc, Metric};
 use rust_metrics::SentenceEmbeddingSimilarity;
 
 fn main() {
-    let predictions = [0, 1, 1, 0];
+    let predictions = [0.0, 1.0, 0.6, 0.0];
     let targets = [0, 1, 0, 0];
-    let mut accuracy = BinaryAccuracy::new();
+    let mut accuracy = BinaryAccuracy::default();
     accuracy
         .update((&predictions, &targets))
         .expect("lengths should match");

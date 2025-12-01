@@ -1,5 +1,7 @@
 use crate::core::{Metric, MetricError};
-use crate::utils::ConfusionMatrix;
+use crate::utils::AverageMethod;
+
+use super::stat_scores::{BinaryStatScores, MulticlassStatScores};
 
 /// Thresholded precision for binary classification probabilities.
 ///
@@ -10,21 +12,15 @@ use crate::utils::ConfusionMatrix;
 /// precision.update((&[0.9, 0.4], &[1_usize, 0])).unwrap();
 /// assert_eq!(precision.compute(), Some(1.0));
 /// ```
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Default)]
 pub struct BinaryPrecision {
-    confusion_matrix: ConfusionMatrix,
-}
-
-impl Default for BinaryPrecision {
-    fn default() -> Self {
-        Self::new(0.5)
-    }
+    stat_scores: BinaryStatScores,
 }
 
 impl BinaryPrecision {
     pub fn new(threshold: f64) -> Self {
-        let confusion_matrix = ConfusionMatrix::new(threshold);
-        Self { confusion_matrix }
+        let stat_scores = BinaryStatScores::new(threshold);
+        Self { stat_scores }
     }
 }
 
@@ -32,32 +28,111 @@ impl Metric<(&[f64], &[usize])> for BinaryPrecision {
     type Output = f64;
 
     fn update(&mut self, (predictions, targets): (&[f64], &[usize])) -> Result<(), MetricError> {
-        if predictions.len() != targets.len() {
-            return Err(MetricError::LengthMismatch {
-                predictions: predictions.len(),
-                targets: targets.len(),
-            });
-        }
-        for (&prediction, &target) in predictions.iter().zip(targets.iter()) {
-            self.confusion_matrix.update(prediction, target)?;
-        }
+        self.stat_scores.update((predictions, targets))?;
 
         Ok(())
     }
 
     fn reset(&mut self) {
-        self.confusion_matrix.reset();
+        self.stat_scores.reset();
     }
 
     fn compute(&self) -> Option<Self::Output> {
-        if self.confusion_matrix.total == 0 {
+        if self.stat_scores.total == 0 {
             return None;
         }
         Some(
-            self.confusion_matrix.true_positive as f64
-                / (self.confusion_matrix.true_positive + self.confusion_matrix.false_positive)
-                    as f64,
+            self.stat_scores.true_positive as f64
+                / (self.stat_scores.true_positive + self.stat_scores.false_positive) as f64,
         )
+    }
+}
+
+#[derive(Debug, Clone)]
+pub struct MulticlassPrecision {
+    stat_scores: MulticlassStatScores,
+    average_method: AverageMethod,
+}
+
+impl MulticlassPrecision {
+    pub fn new(num_classes: usize, average_method: AverageMethod) -> Self {
+        let stat_scores = MulticlassStatScores::new(num_classes);
+        Self {
+            stat_scores,
+            average_method,
+        }
+    }
+}
+
+impl Metric<(&[&[f64]], &[usize])> for MulticlassPrecision {
+    type Output = f64;
+
+    fn update(&mut self, (predictions, targets): (&[&[f64]], &[usize])) -> Result<(), MetricError> {
+        self.stat_scores.update((predictions, targets))?;
+
+        Ok(())
+    }
+
+    fn reset(&mut self) {
+        self.stat_scores.reset();
+    }
+
+    fn compute(&self) -> Option<Self::Output> {
+        if self.stat_scores.total == 0 {
+            return None;
+        }
+
+        let num_classes = self.stat_scores.num_classes;
+        let tp = &self.stat_scores.true_positive;
+        let fp = &self.stat_scores.false_positive;
+        let total_per_class = &self.stat_scores.total_per_class;
+
+        match self.average_method {
+            AverageMethod::Micro => {
+                let total_tp: usize = tp.iter().sum();
+                let total_fp: usize = fp.iter().sum();
+
+                if total_tp + total_fp == 0 {
+                    return None;
+                }
+                Some(total_tp as f64 / (total_tp + total_fp) as f64)
+            }
+
+            AverageMethod::Macro => {
+                let mut sum = 0.0;
+                let mut count = 0;
+                for i in 0..num_classes {
+                    let denom = tp[i] + fp[i];
+                    if denom > 0 {
+                        sum += tp[i] as f64 / denom as f64;
+                        count += 1;
+                    }
+                }
+                if count == 0 {
+                    None
+                } else {
+                    Some(sum / count as f64)
+                }
+            }
+
+            AverageMethod::Weighted => {
+                let mut numerator = 0.0;
+                let mut denom_total = 0.0;
+                for i in 0..num_classes {
+                    let denom = tp[i] + fp[i];
+                    if denom > 0 {
+                        let support = total_per_class[i] as f64;
+                        numerator += support * (tp[i] as f64 / denom as f64);
+                        denom_total += support;
+                    }
+                }
+                if denom_total == 0.0 {
+                    None
+                } else {
+                    Some(numerator / denom_total)
+                }
+            }
+        }
     }
 }
 
@@ -70,21 +145,15 @@ impl Metric<(&[f64], &[usize])> for BinaryPrecision {
 /// recall.update((&[0.9, 0.4], &[1_usize, 1])).unwrap();
 /// assert_eq!(recall.compute(), Some(0.5));
 /// ```
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Default)]
 pub struct BinaryRecall {
-    confusion_matrix: ConfusionMatrix,
-}
-
-impl Default for BinaryRecall {
-    fn default() -> Self {
-        Self::new(0.5)
-    }
+    stat_scores: BinaryStatScores,
 }
 
 impl BinaryRecall {
     pub fn new(threshold: f64) -> Self {
-        let confusion_matrix = ConfusionMatrix::new(threshold);
-        Self { confusion_matrix }
+        let stat_scores = BinaryStatScores::new(threshold);
+        Self { stat_scores }
     }
 }
 
@@ -92,38 +161,29 @@ impl Metric<(&[f64], &[usize])> for BinaryRecall {
     type Output = f64;
 
     fn update(&mut self, (predictions, targets): (&[f64], &[usize])) -> Result<(), MetricError> {
-        if predictions.len() != targets.len() {
-            return Err(MetricError::LengthMismatch {
-                predictions: predictions.len(),
-                targets: targets.len(),
-            });
-        }
-        for (&prediction, &target) in predictions.iter().zip(targets.iter()) {
-            self.confusion_matrix.update(prediction, target)?;
-        }
+        self.stat_scores.update((predictions, targets))?;
 
         Ok(())
     }
 
     fn reset(&mut self) {
-        self.confusion_matrix.reset();
+        self.stat_scores.reset();
     }
 
     fn compute(&self) -> Option<Self::Output> {
-        if self.confusion_matrix.total == 0 {
+        if self.stat_scores.total == 0 {
             return None;
         }
         Some(
-            self.confusion_matrix.true_positive as f64
-                / (self.confusion_matrix.true_positive + self.confusion_matrix.false_negative)
-                    as f64,
+            self.stat_scores.true_positive as f64
+                / (self.stat_scores.true_positive + self.stat_scores.false_negative) as f64,
         )
     }
 }
 
 #[cfg(test)]
 mod tests {
-    use super::{BinaryPrecision, BinaryRecall};
+    use super::{BinaryPrecision, BinaryRecall, MulticlassPrecision};
     use crate::core::{Metric, MetricError};
 
     #[test]
@@ -148,13 +208,27 @@ mod tests {
         let err = precision
             .update((&[0.8], &[2_usize]))
             .expect_err("invalid targets should fail");
-        assert_eq!(
-            err,
-            MetricError::IncompatibleInput {
-                expected: "target must be 0 or 1",
-                got: "other",
-            }
-        );
+        match err {
+            MetricError::IncompatibleInput { .. } => {} // OK: variant matches
+            other => panic!("Expected IncompatibleInput error, got: {:?}", other),
+        }
+    }
+    #[test]
+    fn mutliclass_precision() {
+        let mut metric = MulticlassPrecision::new(3, super::AverageMethod::Macro);
+        let targets = [2, 1, 0, 0];
+        let preds: [&[f64]; 4] = [
+            &[0.16, 0.26, 0.58][..],
+            &[0.22, 0.61, 0.17][..],
+            &[0.71, 0.09, 0.20][..],
+            &[0.05, 0.82, 0.13][..],
+        ];
+        metric.update((&preds, &targets)).unwrap();
+        let result = metric.compute().unwrap();
+        assert!((result - 0.8333333333333334).abs() < f64::EPSILON);
+
+        metric.reset();
+        assert_eq!(metric.compute(), None);
     }
 
     #[test]
@@ -179,12 +253,9 @@ mod tests {
         let err = recall
             .update((&[0.8], &[2_usize]))
             .expect_err("invalid targets should fail");
-        assert_eq!(
-            err,
-            MetricError::IncompatibleInput {
-                expected: "target must be 0 or 1",
-                got: "other",
-            }
-        );
+        match err {
+            MetricError::IncompatibleInput { .. } => {} // OK: variant matches
+            other => panic!("Expected IncompatibleInput error, got: {:?}", other),
+        }
     }
 }

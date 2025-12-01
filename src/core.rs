@@ -3,18 +3,8 @@
 pub enum MetricError {
     /// `predictions.len()` and `targets.len()` differ.
     LengthMismatch { predictions: usize, targets: usize },
-    /// A class index is outside the configured range.
-    InvalidClassIndex { class: usize, num_classes: usize },
-    /// Multilabel inputs do not align with the expected shape.
-    InvalidLabelShape {
-        total_labels: usize,
-        num_labels: usize,
-    },
     /// Inputs fail additional validation (value ranges, binary labels, etc.).
-    IncompatibleInput {
-        expected: &'static str,
-        got: &'static str,
-    },
+    IncompatibleInput { expected: String, got: String },
 }
 
 /// Common interface implemented by every streaming metric.

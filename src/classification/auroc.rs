@@ -191,10 +191,7 @@ mod tests {
     #[test]
     fn binary_auroc_binned() {
         let mut auc = BinaryAuroc::new(100);
-        let _ = auc.update((
-            &[0.9, 0.8, 0.7, 0.4, 0.2],
-            &[1_usize, 1, 0, 0, 1],
-        ));
+        let _ = auc.update((&[0.9, 0.8, 0.7, 0.4, 0.2], &[1_usize, 1, 0, 0, 1]));
         assert!((auc.compute().unwrap() - (2.0 / 3.0)).abs() < f64::EPSILON);
 
         auc.reset();
@@ -204,14 +201,8 @@ mod tests {
     #[test]
     fn binary_auroc_exact() {
         let mut auc = BinaryAuroc::new(0);
-        let _ = auc.update((
-            &[0.9, 0.8, 0.7, 0.4, 0.2],
-            &[1_usize, 1, 0, 0, 1],
-        ));
-        let _ = auc.update((
-            &[0.9, 0.8, 0.7, 0.4, 0.2],
-            &[1_usize, 1, 0, 0, 1],
-        ));
+        let _ = auc.update((&[0.9, 0.8, 0.7, 0.4, 0.2], &[1_usize, 1, 0, 0, 1]));
+        let _ = auc.update((&[0.9, 0.8, 0.7, 0.4, 0.2], &[1_usize, 1, 0, 0, 1]));
         assert!((auc.compute().unwrap() - (2.0 / 3.0)).abs() < f64::EPSILON);
 
         let scores = [0.9, 0.6, 0.1, 0.2];
