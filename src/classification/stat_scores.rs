@@ -125,12 +125,10 @@ impl MulticlassStatScores {
                     } else {
                         self.false_negative[class_idx] += 1;
                     }
+                } else if class_idx == prediction_idx {
+                    self.false_positive[class_idx] += 1;
                 } else {
-                    if class_idx == prediction_idx {
-                        self.false_positive[class_idx] += 1;
-                    } else {
-                        self.true_negative[class_idx] += 1;
-                    }
+                    self.true_negative[class_idx] += 1;
                 }
                 self.total_per_class[class_idx] += 1;
             }

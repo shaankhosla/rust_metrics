@@ -119,7 +119,7 @@ impl Metric<(&[&[f64]], &[usize])> for MulticlassAccuracy {
                         / self.stat_scores.total_per_class[class] as f64;
                     accuracies += accuracy;
                 }
-                return Some(accuracies / num_classes as f64);
+                Some(accuracies / num_classes as f64)
             }
 
             AverageMethod::Weighted => {
