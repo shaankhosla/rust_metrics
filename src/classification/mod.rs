@@ -14,6 +14,6 @@ pub mod stat_scores;
 pub use accuracy::{BinaryAccuracy, MulticlassAccuracy};
 pub use auroc::BinaryAuroc;
 pub use confusion_matrix::BinaryConfusionMatrix;
-pub use f1::BinaryF1Score;
+pub use f1::{BinaryF1Score, MulticlassF1Score};
 pub use hinge::BinaryHinge;
-pub use precision_recall::{BinaryPrecision, BinaryRecall};
+pub use precision_recall::{BinaryPrecision, BinaryRecall, MulticlassPrecision};

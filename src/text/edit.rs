@@ -1,5 +1,5 @@
 use crate::core::{Metric, MetricError};
-use crate::utils::{levenshtein_distance, MetricAggregator, Reduction};
+use crate::utils::{MetricAggregator, Reduction, levenshtein_distance};
 
 /// Streaming Levenshtein distance.
 ///

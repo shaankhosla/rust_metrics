@@ -4,7 +4,7 @@ use crate::utils::verify_range;
 /// Online hinge loss for binary classification.
 ///
 /// Predictions stay within `[-1, 1]` and
-/// labels must be encoded as `-1.0` (negative) or `1.0` (positive). 
+/// labels must be encoded as `-1.0` (negative) or `1.0` (positive).
 ///
 /// ```
 /// use rust_metrics::{BinaryHinge, Metric};

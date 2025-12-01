@@ -61,8 +61,7 @@ pub struct MulticlassPrecision {
 ///
 ///
 /// ```
-/// use rust_metrics::{Metric};
-/// use rust_metrics::classification::precision_recall::MulticlassPrecision;
+/// use rust_metrics::{Metric, MulticlassPrecision};
 /// use rust_metrics::utils::AverageMethod;
 ///
 /// let targets = [2, 1, 0, 0];
