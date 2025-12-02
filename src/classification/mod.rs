@@ -8,6 +8,7 @@ pub mod auroc;
 pub mod confusion_matrix;
 pub mod f1;
 pub mod hinge;
+pub mod jaccard;
 pub mod precision_recall;
 pub mod stat_scores;
 
@@ -16,4 +17,5 @@ pub use auroc::BinaryAuroc;
 pub use confusion_matrix::BinaryConfusionMatrix;
 pub use f1::{BinaryF1Score, MulticlassF1Score};
 pub use hinge::{BinaryHingeLoss, MulticlassHingeLoss};
+pub use jaccard::{BinaryJaccardIndex, MulticlassJaccardIndex};
 pub use precision_recall::{BinaryPrecision, BinaryRecall, MulticlassPrecision};

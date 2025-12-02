@@ -88,12 +88,14 @@ reports cosine similarities for each pair instead of precision/recall triples.
 - `BinaryPrecision`, `BinaryRecall`, `MulticlassPrecision` 
 - `BinaryF1Score`, `MulticlassF1Score`
 - `BinaryHingeLoss`, `MulticlassHingeLoss`
+- `BinaryJaccardIndex`, `MulticlassJaccardIndex`
 - `BinaryConfusionMatrix`
 - `BinaryAuroc`
 
 ### Regression
 
 - `MeanSquaredError`
+- `NormalizedRootMeanSquaredError`
 - `MeanAbsoluteError`
 - `MeanAbsolutePercentageError`
 - `R2Score`
