@@ -17,7 +17,7 @@ pub use regression::{
     NormalizedRootMeanSquaredError, R2Score,
 };
 
-pub use text::{Bleu, EditDistance};
+pub use text::{Bleu, EditDistance, RougeScore};
 pub use utils::Reduction;
 
 #[cfg_attr(docsrs, doc(cfg(feature = "text-bert")))]

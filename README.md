@@ -104,6 +104,7 @@ reports cosine similarities for each pair instead of precision/recall triples.
 
 - `Bleu` with optional smoothing and arbitrary n-gram depth
 - `EditDistance` with sum or mean reduction
+- `RougeScore` covering rouge-1/2/L/Lsum with TorchMetrics-style outputs
 - `SentenceEmbeddingSimilarity` (requires the `text-bert` feature) backed by [`fastembed`]. This
   metric embeds each sentence pair with lightweight BERT embeddings and reports cosine similarity
   scores.
