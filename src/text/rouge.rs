@@ -181,11 +181,23 @@ mod tests {
         assert_eq!(score.get(&RougeKey::Rouge1).unwrap().precision, 0.75);
         assert_eq!(score.get(&RougeKey::Rouge1).unwrap().recall, 0.75);
         assert_eq!(score.get(&RougeKey::Rouge1).unwrap().fmeasure, 0.75);
-
         assert_eq!(score.get(&RougeKey::Rouge2).unwrap().precision, 0.0);
 
         metric.reset();
         let result = metric.compute();
         assert!(result.is_none());
+
+        let preds = vec!["The quick brown fox"];
+        let targets = vec!["The quick brown fox"];
+        metric.update((&preds, &targets)).unwrap();
+        let score = metric.compute().unwrap();
+        assert_eq!(score.get(&RougeKey::Rouge1).unwrap().precision, 1.0);
+
+        metric.reset();
+        let preds = vec!["cats sleep often"];
+        let targets = vec!["dogs bark loudly"];
+        metric.update((&preds, &targets)).unwrap();
+        let score = metric.compute().unwrap();
+        assert_eq!(score.get(&RougeKey::Rouge1).unwrap().precision, 0.0);
     }
 }
