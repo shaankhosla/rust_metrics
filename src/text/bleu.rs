@@ -1,6 +1,5 @@
 use crate::core::{Metric, MetricError};
-use crate::utils::tokenize;
-use std::collections::HashMap;
+use crate::utils::{count_ngrams, tokenize};
 
 /// Cumulative BLEU score with optional smoothing and arbitrary n-gram depth.
 ///
@@ -42,18 +41,6 @@ impl Bleu {
             targets_len: 0,
         }
     }
-}
-
-fn count_ngrams<'a>(tokens: &[&'a str], n: usize) -> HashMap<Vec<&'a str>, usize> {
-    let mut map = HashMap::new();
-    if tokens.len() < n {
-        return map;
-    }
-    for i in 0..=(tokens.len() - n) {
-        let key = tokens[i..i + n].to_vec();
-        *map.entry(key).or_insert(0) += 1;
-    }
-    map
 }
 
 impl Metric<(&[&str], &[&str])> for Bleu {
