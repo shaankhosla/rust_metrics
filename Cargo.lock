@@ -1983,7 +1983,7 @@ dependencies = [
 
 [[package]]
 name = "rust_metrics"
-version = "0.1.5"
+version = "0.1.6"
 dependencies = [
  "fastembed",
 ]

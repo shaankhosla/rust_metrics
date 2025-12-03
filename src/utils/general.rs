@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 use crate::core::MetricError;
 
 pub fn verify_range(input: f64, min: f64, max: f64) -> Result<(), MetricError> {
@@ -43,6 +45,30 @@ pub fn cosine_similarity(v1: &[f32], v2: &[f32]) -> f64 {
 
 pub fn tokenize(input: &str) -> Vec<&str> {
     input.split_whitespace().collect()
+}
+
+pub fn normalize(input: &str) -> String {
+    let mut normalized = String::with_capacity(input.len());
+    for ch in input.chars() {
+        if ch.is_alphanumeric() {
+            normalized.push(ch.to_ascii_lowercase());
+        } else {
+            normalized.push(' ');
+        }
+    }
+    normalized
+}
+
+pub fn count_ngrams<'a>(tokens: &[&'a str], n: usize) -> HashMap<Vec<&'a str>, usize> {
+    let mut map = HashMap::new();
+    if tokens.len() < n {
+        return map;
+    }
+    for i in 0..=(tokens.len() - n) {
+        let key = tokens[i..i + n].to_vec();
+        *map.entry(key).or_insert(0) += 1;
+    }
+    map
 }
 
 pub fn levenshtein_distance(s1: &str, s2: &str) -> usize {

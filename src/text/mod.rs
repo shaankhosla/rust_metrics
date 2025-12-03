@@ -10,6 +10,8 @@ pub use bert::SentenceEmbeddingSimilarity;
 
 pub mod bleu;
 pub mod edit;
+pub mod rouge;
 
 pub use bleu::Bleu;
 pub use edit::EditDistance;
+pub use rouge::RougeScore;
