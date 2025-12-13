@@ -1,4 +1,4 @@
-//! Regression metrics: mean squared error, mean absolute error
+//! Regression metrics
 //!
 //! All types implement [`Metric`](crate::core::Metric) for batched updates.
 

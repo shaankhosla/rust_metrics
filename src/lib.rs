@@ -1,6 +1,7 @@
 #![doc = include_str!("../README.md")]
 
 pub mod classification;
+pub mod clustering;
 pub mod core;
 pub mod regression;
 pub mod text;
@@ -11,6 +12,7 @@ pub use classification::{
     BinaryJaccardIndex, BinaryPrecision, BinaryRecall, MulticlassAccuracy, MulticlassF1Score,
     MulticlassHingeLoss, MulticlassJaccardIndex, MulticlassPrecision,
 };
+pub use clustering::MutualInfoScore;
 pub use core::{Metric, MetricError};
 pub use regression::{
     MeanAbsoluteError, MeanAbsolutePercentageError, MeanSquaredError,

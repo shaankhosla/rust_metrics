@@ -60,6 +60,19 @@ mae.update((&[2.5, 0.0, 2.0, 8.0], &[3.0, -0.5, 2.0, 7.0])).unwrap();
 assert!((mae.compute().unwrap() - 0.5).abs() < f64::EPSILON);
 ```
 
+### Clustering
+
+```rust
+use rust_metrics::{MutualInfoScore, Metric};
+
+let preds = [2, 1, 0, 1, 0];
+let target = [0, 2, 1, 1, 0];
+
+let mut metric = MutualInfoScore::default();
+metric.update((&preds, &target)).unwrap();
+assert!((metric.compute().unwrap() - 0.500402423538188).abs() < f64::EPSILON);
+```
+
 ### Text
 
 ```rust
@@ -99,6 +112,10 @@ reports cosine similarities for each pair instead of precision/recall triples.
 - `MeanAbsoluteError`
 - `MeanAbsolutePercentageError`
 - `R2Score`
+
+### Clustering
+
+- `MutualInfoScore`
 
 ### Text
 

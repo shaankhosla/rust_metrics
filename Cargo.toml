@@ -1,8 +1,8 @@
 [package]
 name = "rust_metrics"
-version = "0.1.6"
+version = "0.1.7"
 edition = "2024"
-description = "Incremental evaluation metrics for classification and text generation pipelines."
+description = "Incremental evaluation metrics for various machine learning pipelines."
 license = "Apache-2.0"
 repository = "https://github.com/shaankhosla/rust_metrics"
 homepage = "https://github.com/shaankhosla/rust_metrics"
